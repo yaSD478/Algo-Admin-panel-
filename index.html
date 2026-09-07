@@ -1,0 +1,3160 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SmartStore Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+:root{
+  --p:#0a7a6e;--p2:#065f55;--p3:#04433c;--acc:#0fb8a5;--acc2:#00d4be;
+  --pdim:rgba(10,122,110,.08);--pglow:rgba(10,122,110,.18);
+  --bg:#f5fffe;--card:#fff;--s2:#eef9f7;--s3:#e2f4f1;
+  --tx:#0d2b28;--tx2:#4a6b68;--tx3:#7fa8a4;
+  --bdr:#d8ecea;--bdr2:#c2deda;
+  --gr:#10b981;--gr-dim:rgba(16,185,129,.1);
+  --rd:#ef4444;--rd-dim:rgba(239,68,68,.1);
+  --or:#f97316;--or-dim:rgba(249,115,22,.1);
+  --yl:#f59e0b;--yl-dim:rgba(245,158,11,.1);
+  --bl:#3b82f6;--bl-dim:rgba(59,130,246,.1);
+  --sh-xs:0 1px 4px rgba(0,0,0,.05);
+  --sh-sm:0 2px 12px rgba(10,122,110,.08),0 1px 3px rgba(0,0,0,.04);
+  --sh-md:0 4px 24px rgba(10,122,110,.12),0 2px 6px rgba(0,0,0,.04);
+  --sh-lg:0 12px 48px rgba(10,122,110,.15),0 4px 12px rgba(0,0,0,.06);
+  --sh-xl:0 24px 80px rgba(10,122,110,.18),0 8px 24px rgba(0,0,0,.07);
+  --sh-tl:0 8px 32px rgba(10,122,110,.25);
+  --fd:'Plus Jakarta Sans',sans-serif;
+  --fb:'DM Sans',sans-serif;
+  --tr:.22s cubic-bezier(.4,0,.2,1);
+  --r-sm:12px;--r-md:16px;--r-lg:22px;--r-xl:32px;
+  --sw:270px;--th:62px;--bnh:66px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--fb);background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--pdim);color:var(--p)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:10px}
+input,textarea,select,button{font-family:var(--fb)}
+a{text-decoration:none;color:inherit}
+
+/* ANIMS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@keyframes slideRight{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ===== AUTH ===== */
+#auth-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden}
+.auth-bg-circle{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;opacity:.6}
+.auth-bg-circle:nth-child(1){width:500px;height:500px;top:-150px;right:-100px;background:radial-gradient(circle,rgba(10,122,110,.12),transparent)}
+.auth-bg-circle:nth-child(2){width:380px;height:380px;bottom:-80px;left:-80px;background:radial-gradient(circle,rgba(15,184,165,.08),transparent)}
+.auth-box{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-xl);width:100%;max-width:420px;box-shadow:var(--sh-xl);overflow:hidden;position:relative;z-index:1;animation:fadeUp .6s ease both}
+.auth-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--p),var(--acc),var(--acc2))}
+.auth-top{padding:32px 32px 22px;text-align:center}
+.auth-logo{width:68px;height:68px;margin:0 auto 14px;background:linear-gradient(135deg,var(--p),var(--acc));border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;box-shadow:var(--sh-tl)}
+.auth-logo i{color:#fff}
+.auth-ttl{font-family:var(--fd);font-size:1.5rem;font-weight:900;color:var(--tx);margin-bottom:3px}
+.auth-sub{font-size:.78rem;color:var(--tx3);line-height:1.5}
+.auth-tabs{display:flex;background:var(--s2);border-radius:11px;padding:4px;gap:4px;margin:18px 32px 0}
+.auth-tab{flex:1;padding:9px;text-align:center;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;color:var(--tx3);transition:all var(--tr)}
+.auth-tab.active{background:var(--card);color:var(--p);box-shadow:var(--sh-xs)}
+.auth-pane{display:none;padding:20px 32px 28px}
+.auth-pane.active{display:block;animation:fadeIn .2s ease}
+.a-field{margin-bottom:13px}
+.a-lbl{font-size:.7rem;font-weight:800;color:var(--tx2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;display:block}
+.a-inp{width:100%;padding:12px 14px;background:var(--s2);border:1.5px solid var(--bdr);border-radius:var(--r-sm);color:var(--tx);font-size:.88rem;transition:all var(--tr)}
+.a-inp:focus{outline:none;border-color:var(--p);background:var(--card);box-shadow:0 0 0 3px var(--pglow)}
+.a-inp::placeholder{color:var(--tx3)}
+.a-inp.err{border-color:var(--rd);background:var(--rd-dim)}
+.a-err{font-size:.74rem;color:var(--rd);min-height:16px;margin-top:4px;text-align:center}
+.btn-auth{width:100%;padding:13px;background:linear-gradient(135deg,var(--p),var(--acc));border:none;border-radius:var(--r-sm);color:#fff;font-size:.9rem;font-weight:700;cursor:pointer;transition:all var(--tr);box-shadow:var(--sh-tl);display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
+.btn-auth:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(10,122,110,.38)}
+.btn-auth:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+/* ===== APP ===== */
+#app{display:none;min-height:100vh}
+
+/* SIDEBAR TOGGLE btn desktop */
+.sb-toggle{position:fixed;top:12px;left:12px;z-index:310;width:38px;height:38px;border-radius:11px;border:1.5px solid var(--bdr);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;color:var(--tx2);box-shadow:var(--sh-sm);transition:all var(--tr)}
+.sb-toggle:hover{background:var(--pdim);border-color:var(--p);color:var(--p)}
+
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sw);background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:300;box-shadow:2px 0 20px rgba(0,0,0,.05);transition:transform var(--tr)}
+.sidebar.collapsed{transform:translateX(-100%)}
+/* Mobile overlay */
+.sb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:299;display:none;backdrop-filter:blur(3px);animation:fadeIn .2s ease}
+.sb-overlay.open{display:block}
+.s-head{padding:18px 16px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.s-head-logo{width:40px;height:40px;background:linear-gradient(135deg,var(--p),var(--acc));border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:var(--sh-tl);flex-shrink:0}
+.s-head-logo i{color:#fff}
+.s-head-txt{font-family:var(--fd);font-size:1rem;font-weight:900;color:var(--tx)}
+.s-head-txt span{color:var(--p)}
+.s-head-badge{font-size:.6rem;font-weight:800;color:var(--p);background:var(--pdim);padding:2px 8px;border-radius:100px;margin-left:auto;white-space:nowrap;flex-shrink:0}
+.s-close-btn{width:30px;height:30px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--s2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem;color:var(--tx3);transition:all var(--tr);flex-shrink:0;margin-left:auto;display:none}
+.s-close-btn:hover{background:var(--rd-dim);border-color:var(--rd);color:var(--rd)}
+.s-nav{flex:1;overflow-y:auto;padding:10px 10px;scrollbar-width:none}
+.s-nav::-webkit-scrollbar{display:none}
+.s-lbl{padding:10px 12px 4px;font-size:.62rem;font-weight:800;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase}
+.s-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--r-sm);cursor:pointer;color:var(--tx2);font-size:.85rem;font-weight:500;transition:all var(--tr);position:relative;margin-bottom:2px}
+.s-item i{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.s-item span{flex:1}
+.s-item:hover{background:var(--s2);color:var(--tx)}
+.s-item.active{background:var(--pdim);color:var(--p2);font-weight:700}
+.s-item.active::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:3px;border-radius:2px;background:var(--p)}
+.s-bdg{padding:2px 8px;border-radius:100px;font-size:.6rem;font-weight:900;background:var(--rd-dim);color:var(--rd);min-width:20px;text-align:center}
+.s-bdg.green{background:var(--gr-dim);color:var(--gr)}
+.s-foot{padding:13px 15px;border-top:1px solid var(--bdr);display:flex;align-items:center;gap:11px;flex-shrink:0;cursor:pointer;transition:all var(--tr)}
+.s-foot:hover{background:var(--s2)}
+.s-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--acc));display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#fff;font-weight:700;flex-shrink:0;overflow:hidden}
+.s-av img{width:36px;height:36px;border-radius:50%;object-fit:cover}
+.s-uname{font-size:.82rem;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-urole{font-size:.66rem;color:var(--p);font-weight:700}
+
+/* TOPBAR mobile */
+.topbar{display:none;position:fixed;top:0;left:0;right:0;height:var(--th);background:var(--card);border-bottom:1px solid var(--bdr);z-index:200;align-items:center;padding:0 14px;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.t-logo{display:flex;align-items:center;gap:8px;flex:1}
+.t-logo-ico{width:34px;height:34px;background:linear-gradient(135deg,var(--p),var(--acc));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+.t-logo-ico i{color:#fff}
+.t-brand{font-family:var(--fd);font-size:.95rem;font-weight:900;color:var(--tx)}
+.t-brand span{color:var(--p)}
+.t-badge{font-size:.58rem;font-weight:800;color:var(--p);background:var(--pdim);padding:2px 7px;border-radius:100px}
+.t-actions{display:flex;gap:6px}
+.t-btn{width:36px;height:36px;border-radius:10px;border:1.5px solid var(--bdr);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--tx2);font-size:1rem;transition:all var(--tr);position:relative}
+.t-btn:hover{background:var(--pdim);border-color:var(--p);color:var(--p)}
+.t-btn-bdg{position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;background:var(--rd);color:#fff;font-size:.58rem;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--card)}
+
+/* BOTTOM NAV mobile */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--bnh);background:var(--card);border-top:1px solid var(--bdr);z-index:200;justify-content:space-around;align-items:center;padding:0 4px;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 20px rgba(0,0,0,.06)}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 10px;border-radius:13px;cursor:pointer;transition:all var(--tr);color:var(--tx3);min-width:44px;position:relative}
+.bn-item i{font-size:1.2rem;transition:transform var(--tr)}
+.bn-item span{font-size:.52rem;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+.bn-item.active{color:var(--p)}
+.bn-item.active i{transform:scale(1.1)}
+.bn-bdg{position:absolute;top:3px;right:3px;min-width:15px;height:15px;border-radius:8px;background:var(--rd);color:#fff;font-size:.52rem;font-weight:800;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--card);padding:0 2px}
+
+/* MAIN */
+.main{margin-left:var(--sw);min-height:100vh;transition:margin-left var(--tr)}
+.main.expanded{margin-left:0}
+.page{display:none;animation:fadeIn .28s ease}
+.page.active{display:block}
+.pg{padding:24px 24px 60px;max-width:1180px;margin:0 auto}
+.pg-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.pg-ttl{font-family:var(--fd);font-size:1.45rem;font-weight:800;color:var(--tx)}
+.pg-sub{font-size:.8rem;color:var(--tx3);margin-top:2px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 20px;border-radius:var(--r-sm);border:none;font-family:var(--fb);font-size:.84rem;font-weight:700;cursor:pointer;transition:all var(--tr);white-space:nowrap}
+.btn-p{background:linear-gradient(135deg,var(--p),var(--acc));color:#fff;box-shadow:var(--sh-tl)}
+.btn-p:hover{box-shadow:0 10px 30px rgba(10,122,110,.35);transform:translateY(-2px)}
+.btn-p:active{transform:translateY(0)}
+.btn-p:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-o{background:transparent;color:var(--p);border:1.5px solid var(--p)}
+.btn-o:hover{background:var(--pdim)}
+.btn-g{background:var(--s2);color:var(--tx2);border:1.5px solid var(--bdr)}
+.btn-g:hover{background:var(--s3);color:var(--tx)}
+.btn-gr{background:var(--gr-dim);color:var(--gr);border:1.5px solid rgba(16,185,129,.3)}
+.btn-gr:hover{background:rgba(16,185,129,.15)}
+.btn-rd{background:var(--rd-dim);color:var(--rd);border:1.5px solid rgba(239,68,68,.3)}
+.btn-rd:hover{background:rgba(239,68,68,.15)}
+.btn-sm{padding:7px 14px;font-size:.76rem;border-radius:9px}
+.btn-lg{padding:13px 26px;font-size:.9rem;border-radius:14px}
+.btn-full{width:100%}
+.ico-btn{width:34px;height:34px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--tx2);font-size:.88rem;transition:all var(--tr);flex-shrink:0}
+.ico-btn:hover{background:var(--pdim);border-color:var(--p);color:var(--p)}
+.ico-btn.del:hover{background:var(--rd-dim);border-color:var(--rd);color:var(--rd)}
+
+/* INPUTS */
+.ifield{width:100%;padding:11px 14px;background:var(--s2);border:1.5px solid var(--bdr);border-radius:var(--r-sm);color:var(--tx);font-size:.86rem;transition:all var(--tr)}
+.ifield:focus{outline:none;border-color:var(--p);background:var(--card);box-shadow:0 0 0 3px var(--pglow)}
+.ifield::placeholder{color:var(--tx3)}
+.ifield.err{border-color:var(--rd)}
+.ilbl{font-size:.7rem;font-weight:800;color:var(--tx2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;display:block}
+.igrp{margin-bottom:14px}
+.igrp textarea.ifield{resize:vertical;min-height:80px}
+.igrp select.ifield{cursor:pointer}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-md);padding:20px;box-shadow:var(--sh-xs)}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-lg);padding:20px;position:relative;overflow:hidden;transition:all var(--tr);box-shadow:var(--sh-xs)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-lg) var(--r-lg) 0 0}
+.stat-card.teal::before{background:linear-gradient(90deg,var(--p),var(--acc))}
+.stat-card.green::before{background:linear-gradient(90deg,var(--gr),#34d399)}
+.stat-card.orange::before{background:linear-gradient(90deg,var(--or),#fb923c)}
+.stat-card.red::before{background:linear-gradient(90deg,var(--rd),#f87171)}
+.stat-card.blue::before{background:linear-gradient(90deg,var(--bl),#60a5fa)}
+.stat-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
+.stat-ico{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;margin-bottom:14px}
+.stat-ico.teal{background:var(--pdim);color:var(--p)}
+.stat-ico.green{background:var(--gr-dim);color:var(--gr)}
+.stat-ico.orange{background:var(--or-dim);color:var(--or)}
+.stat-ico.red{background:var(--rd-dim);color:var(--rd)}
+.stat-ico.blue{background:var(--bl-dim);color:var(--bl)}
+.stat-num{font-family:var(--fd);font-size:1.9rem;font-weight:900;color:var(--tx);line-height:1;margin-bottom:4px}
+.stat-lbl{font-size:.76rem;color:var(--tx2);font-weight:500}
+
+/* FORM PANEL */
+.form-panel{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-lg);padding:22px;margin-bottom:18px;display:none;box-shadow:var(--sh-sm)}
+.form-panel.open{display:block;animation:cardIn .25s ease}
+.fp-head{font-family:var(--fd);font-size:1rem;font-weight:800;color:var(--tx);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fp-head i{color:var(--p);font-size:1rem}
+.fp-close{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:1rem;transition:color var(--tr);padding:4px}
+.fp-close:hover{color:var(--rd)}
+
+/* LIST ITEMS */
+.list-item{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-md);padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;transition:all var(--tr);box-shadow:var(--sh-xs);animation:cardIn .3s ease both}
+.list-item:hover{box-shadow:var(--sh-sm);border-color:rgba(10,122,110,.2)}
+.li-thumb{width:68px;height:46px;object-fit:cover;border-radius:10px;background:var(--s2);flex-shrink:0}
+.li-info{flex:1;min-width:0}
+.li-title{font-family:var(--fd);font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;color:var(--tx)}
+.li-meta{font-size:.73rem;color:var(--tx3)}
+.li-price{font-family:var(--fd);font-weight:900;color:var(--p2);font-size:.9rem;margin-top:3px}
+.li-orig{font-size:.72rem;color:var(--tx3);text-decoration:line-through;margin-left:5px}
+.li-actions{display:flex;gap:7px;flex-shrink:0}
+
+/* STATUS PILLS */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:100px;font-size:.68rem;font-weight:800;letter-spacing:.3px;white-space:nowrap}
+.pill-pending{background:var(--or-dim);color:var(--or);border:1px solid rgba(249,115,22,.25)}
+.pill-confirmed{background:var(--gr-dim);color:var(--gr);border:1px solid rgba(16,185,129,.28)}
+.pill-rejected{background:var(--rd-dim);color:var(--rd);border:1px solid rgba(239,68,68,.25)}
+.pill-active{background:var(--gr-dim);color:var(--gr)}
+.pill-inactive{background:var(--rd-dim);color:var(--rd)}
+.pill-free{background:var(--bl-dim);color:var(--bl)}
+.pill-new{background:var(--or-dim);color:var(--or);border:1px solid rgba(249,115,22,.25)}
+.pill-contacted{background:var(--gr-dim);color:var(--gr);border:1px solid rgba(16,185,129,.28)}
+
+/* ORDER CARDS */
+.ord-card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-md);padding:16px;margin-bottom:12px;transition:all var(--tr);box-shadow:var(--sh-xs);animation:cardIn .3s ease both;border-left:3px solid transparent}
+.ord-card:hover{box-shadow:var(--sh-sm)}
+.ord-card.pending{border-left-color:var(--or)}
+.ord-card.confirmed{border-left-color:var(--gr)}
+.ord-card.rejected{border-left-color:var(--rd)}
+.ord-card.new{border-left-color:var(--or)}
+.ord-card.contacted{border-left-color:var(--gr)}
+.ord-top{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap}
+.ord-thumb{width:68px;height:46px;object-fit:cover;border-radius:9px;background:var(--s2);flex-shrink:0}
+.ord-info{flex:1;min-width:140px}
+.ord-name{font-family:var(--fd);font-weight:700;font-size:.9rem;margin-bottom:3px;color:var(--tx)}
+.ord-meta{font-size:.72rem;color:var(--tx3);line-height:1.7}
+.ord-utr{font-family:monospace;color:var(--tx);font-size:.78rem;background:var(--s2);padding:3px 9px;border-radius:6px;display:inline-block;margin-top:4px;letter-spacing:.5px;border:1px solid var(--bdr)}
+.ord-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* USER CARDS */
+.user-card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-md);padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;transition:all var(--tr);box-shadow:var(--sh-xs)}
+.user-card:hover{box-shadow:var(--sh-sm);border-color:rgba(10,122,110,.2)}
+.u-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--acc));display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#fff;font-weight:800;flex-shrink:0;overflow:hidden;font-family:var(--fd)}
+.u-av img{width:44px;height:44px;object-fit:cover;border-radius:50%}
+.u-info{flex:1;min-width:0}
+.u-name{font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;color:var(--tx)}
+.u-email{font-size:.72rem;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u-meta{font-size:.7rem;color:var(--tx2);margin-top:2px}
+
+/* COUPON */
+.coup-card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-md);padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:var(--sh-xs);transition:all var(--tr)}
+.coup-card:hover{box-shadow:var(--sh-sm);border-color:rgba(10,122,110,.2)}
+.coup-code{font-family:monospace;font-size:1rem;font-weight:900;color:var(--p2);background:var(--pdim);border:1px solid rgba(10,122,110,.2);border-radius:9px;padding:6px 14px;letter-spacing:1px;word-break:break-all}
+.coup-info{flex:1;min-width:160px}
+
+/* SCREENSHOT */
+.ss-add-row{display:flex;gap:8px;margin-bottom:8px}
+.ss-list{display:flex;flex-direction:column;gap:7px;margin-bottom:8px}
+.ss-item{display:flex;align-items:center;gap:9px;background:var(--s2);border:1px solid var(--bdr);border-radius:9px;padding:7px 11px}
+.ss-img{width:58px;height:38px;object-fit:cover;border-radius:6px;background:var(--s3);flex-shrink:0}
+.ss-url{flex:1;font-size:.73rem;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.disc-preview{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:.7rem;color:var(--gr);font-weight:800;pointer-events:none}
+
+/* CHAT */
+.chat-layout{display:flex;height:calc(100vh - var(--th) - var(--bnh) - 20px);overflow:hidden;border:1px solid var(--bdr);border-radius:var(--r-lg);box-shadow:var(--sh-sm);background:var(--card)}
+.chat-users{width:250px;border-right:1px solid var(--bdr);overflow-y:auto;flex-shrink:0;background:var(--s2)}
+.chat-users-hd{padding:14px 14px 10px;border-bottom:1px solid var(--bdr);font-family:var(--fd);font-weight:700;font-size:.88rem;color:var(--tx);background:var(--card)}
+.cu-item{padding:11px 14px;cursor:pointer;transition:all var(--tr);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:9px}
+.cu-item:hover{background:var(--pdim)}
+.cu-item.active{background:var(--pdim);border-left:3px solid var(--p)}
+.cu-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--acc));display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#fff;font-weight:800;flex-shrink:0}
+.cu-name{font-size:.82rem;font-weight:700;color:var(--tx)}
+.cu-prev{font-size:.7rem;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.no-chat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--tx3)}
+.no-chat i{font-size:3rem;margin-bottom:12px;opacity:.25}
+.no-chat p{font-size:.84rem}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:9px}
+.bubble{max-width:72%;padding:10px 14px;border-radius:16px;font-size:.83rem;line-height:1.55;word-break:break-word}
+.bubble-u{background:var(--s2);color:var(--tx);align-self:flex-start;border-bottom-left-radius:4px;border:1px solid var(--bdr)}
+.bubble-a{background:linear-gradient(135deg,var(--p),var(--acc));color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.bubble-time{font-size:.6rem;opacity:.65;margin-top:3px;display:block}
+.chat-footer{padding:10px 13px;border-top:1px solid var(--bdr);display:flex;gap:9px;align-items:center;background:var(--card);flex-shrink:0}
+.chat-inp{flex:1;padding:10px 13px;background:var(--s2);border:1.5px solid var(--bdr);border-radius:100px;font-size:.84rem;color:var(--tx);transition:all var(--tr)}
+.chat-inp:focus{outline:none;border-color:var(--p);background:var(--card)}
+.chat-send{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--acc));border:none;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--tr);box-shadow:var(--sh-tl);flex-shrink:0}
+.chat-send:hover{transform:scale(1.06)}
+
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0;margin-bottom:16px}
+.filter-tabs::-webkit-scrollbar{display:none}
+.f-tab{padding:8px 18px;border-radius:100px;background:var(--card);border:1.5px solid var(--bdr);font-size:.78rem;font-weight:700;color:var(--tx2);cursor:pointer;transition:all var(--tr);white-space:nowrap;box-shadow:var(--sh-xs)}
+.f-tab:hover{border-color:var(--p);color:var(--p);background:var(--pdim)}
+.f-tab.active{background:linear-gradient(135deg,var(--p),var(--acc));border-color:transparent;color:#fff;box-shadow:var(--sh-tl)}
+
+/* SEARCH */
+.srch-wrap{position:relative;margin-bottom:16px}
+.srch-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--tx3);pointer-events:none}
+.srch-inp{width:100%;padding:12px 14px 12px 42px;background:var(--card);border:1.5px solid var(--bdr);border-radius:100px;color:var(--tx);font-size:.86rem;transition:all var(--tr);box-shadow:var(--sh-xs)}
+.srch-inp:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px var(--pglow)}
+.srch-inp::placeholder{color:var(--tx3)}
+
+/* SKELETON */
+.skel{background:linear-gradient(90deg,var(--s2) 25%,var(--s3) 50%,var(--s2) 75%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite;border-radius:8px}
+.empty-state{text-align:center;padding:60px 24px;color:var(--tx3)}
+.empty-ico{font-size:3rem;margin-bottom:12px;opacity:.2}
+.empty-state p{font-size:.86rem;line-height:1.6}
+
+/* SETTINGS */
+.settings-sec{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-lg);padding:22px;margin-bottom:18px;box-shadow:var(--sh-xs)}
+.settings-sec h4{font-family:var(--fd);font-size:.95rem;font-weight:800;color:var(--tx);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.settings-sec h4 i{color:var(--p)}
+.info-note{background:var(--pdim);border:1px solid rgba(10,122,110,.2);border-radius:10px;padding:11px 14px;font-size:.78rem;color:var(--p2);line-height:1.6;margin-top:8px;display:flex;align-items:flex-start;gap:8px}
+.info-note i{flex-shrink:0;margin-top:1px}
+.uid-badge{font-family:monospace;background:var(--s2);border:1px solid var(--bdr);border-radius:8px;padding:8px 12px;font-size:.78rem;color:var(--tx2);word-break:break-all;margin-top:8px}
+
+/* CATEGORY MANAGEMENT */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:4px}
+.cat-card{background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--r-md);padding:16px 14px;display:flex;align-items:center;gap:12px;transition:all var(--tr);box-shadow:var(--sh-xs);animation:cardIn .3s ease both}
+.cat-card:hover{box-shadow:var(--sh-sm);border-color:rgba(10,122,110,.25)}
+.cat-icon-preview{width:46px;height:46px;border-radius:13px;background:var(--pdim);border:1.5px solid rgba(10,122,110,.2);display:flex;align-items:center;justify-content:center;font-size:1.35rem;flex-shrink:0;overflow:hidden}
+.cat-icon-preview img{width:38px;height:38px;object-fit:cover;border-radius:8px}
+.cat-icon-preview i{color:var(--p);font-size:1.1rem}
+.cat-info{flex:1;min-width:0}
+.cat-name{font-family:var(--fd);font-weight:700;font-size:.9rem;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-sub{font-size:.7rem;color:var(--tx3);margin-top:2px}
+.icon-preview-row{display:flex;align-items:center;gap:10px;margin-top:8px;padding:10px 13px;background:var(--s2);border:1.5px solid var(--bdr);border-radius:var(--r-sm)}
+.icon-preview-box{width:40px;height:40px;border-radius:11px;background:var(--pdim);border:1px solid rgba(10,122,110,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.icon-preview-box i{color:var(--p);font-size:1.1rem}
+.icon-preview-box img{width:32px;height:32px;object-fit:cover;border-radius:7px}
+.icon-hint{font-size:.72rem;color:var(--tx3);line-height:1.5}
+
+/* TOAST */
+#toast-wrap{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10000;pointer-events:none}
+.toast-pill{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:100px;background:var(--tx);color:#fff;font-size:.82rem;font-weight:600;box-shadow:var(--sh-lg);animation:toastIn .32s ease;white-space:nowrap}
+
+/* DASHBOARD mini cards */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.dash-section{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-lg);padding:18px;box-shadow:var(--sh-xs)}
+.dash-sec-hd{font-family:var(--fd);font-weight:800;font-size:.9rem;color:var(--tx);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.dash-ord-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bdr)}
+.dash-ord-item:last-child{border-bottom:none}
+
+/* RESPONSIVE */
+@media(max-width:1024px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .dash-grid{grid-template-columns:1fr}
+  .f-row-3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.mob-open{transform:translateX(0);animation:slideRight .3s ease}
+  .sb-toggle{display:none}
+  .topbar{display:flex!important}
+  .bottom-nav{display:flex!important}
+  .main{margin-left:0!important;padding-top:var(--th)}
+  .pg{padding:14px 12px 80px}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .stat-num{font-size:1.5rem}
+  .dash-grid{grid-template-columns:1fr}
+  .chat-layout{height:calc(100vh - var(--th) - var(--bnh) - 20px)}
+  .chat-users{width:220px}
+  .f-row{grid-template-columns:1fr}
+  .f-row-3{grid-template-columns:1fr}
+  #toast-wrap{bottom:76px}
+}
+@media(max-width:480px){
+  .chat-users{display:none}
+  .chat-layout{border-radius:var(--r-md)}
+  .stats-grid{grid-template-columns:1fr 1fr}
+}
+/* ===== SECTIONS ADMIN ===== */
+.sec-admin-item{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-md);padding:16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;transition:all var(--tr);box-shadow:var(--sh-xs);animation:cardIn .3s ease both}
+.sec-admin-item:hover{box-shadow:var(--sh-sm);border-color:rgba(10,122,110,.2)}
+.sec-admin-info{flex:1;min-width:0}
+.sec-admin-title{font-family:var(--fd);font-weight:800;font-size:.95rem;color:var(--tx);margin-bottom:5px}
+.sec-admin-meta{font-size:.74rem;color:var(--tx3);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sec-admin-actions{display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap}
+.sec-prod-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.sec-prod-chip{display:flex;align-items:center;gap:5px;background:var(--pdim);border:1px solid rgba(10,122,110,.15);border-radius:8px;padding:3px 9px;font-size:.7rem;color:var(--p2);font-weight:600}
+.sf-prod-row{display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--bdr)}
+.sf-prod-row:last-child{border-bottom:none}
+.sf-prod-row:hover{background:var(--pdim)}
+.sf-prod-row.added{opacity:.6;cursor:default}
+.sf-prod-img{width:44px;height:30px;object-fit:cover;border-radius:6px;background:var(--s2);flex-shrink:0}
+.pop-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-size:.72rem;font-weight:700;color:var(--tx2);transition:all .2s;white-space:nowrap;user-select:none}
+.pop-toggle.active{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+.pop-toggle .pop-star{font-size:.85rem;transition:transform .2s}
+.pop-toggle.active .pop-star{transform:scale(1.2)}
+.sf-prod-name{flex:1;font-size:.8rem;font-weight:600;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sf-prod-price{font-size:.75rem;color:var(--p2);font-weight:700;flex-shrink:0}
+.sf-sel-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--s2);border:1px solid var(--bdr);border-radius:10px}
+.sf-sel-img{width:40px;height:28px;object-fit:cover;border-radius:6px;background:var(--s3);flex-shrink:0}
+.sf-sel-name{flex:1;font-size:.8rem;font-weight:600;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sf-sel-remove{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:.88rem;padding:4px;border-radius:6px;transition:color .15s;flex-shrink:0}
+.sf-sel-remove:hover{color:var(--rd)}
+@media(max-width:600px){.sec-admin-item{flex-direction:column}.sec-admin-actions{width:100%}}
+
+/* ===================================================
+   ALL COURSES COLLECTION — ADMIN
+   =================================================== */
+.ac-upload-row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-bottom:6px}
+.ac-upload-box{width:180px;height:110px;border-radius:var(--r-md);border:1.5px dashed var(--bdr2);background:var(--s2);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;flex-shrink:0}
+.ac-upload-box.ac-logo-box{width:110px;height:110px;border-radius:50%}
+.ac-upload-box img{width:100%;height:100%;object-fit:cover}
+.ac-upload-box .ac-ph{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--tx3);font-size:.7rem;font-weight:600}
+.ac-upload-box .ac-ph i{font-size:1.4rem;opacity:.5}
+.ac-upload-meta{flex:1;min-width:180px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.ac-upload-meta .btn{align-self:flex-start}
+.ac-file-hidden{display:none}
+.ac-stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.ac-stat-card{flex:1;min-width:140px;background:linear-gradient(135deg,var(--pdim),transparent);border:1px solid var(--bdr);border-radius:var(--r-md);padding:14px 16px}
+.ac-stat-num{font-family:var(--fd);font-size:1.4rem;font-weight:900;color:var(--p2)}
+.ac-stat-lbl{font-size:.72rem;color:var(--tx2);font-weight:600;margin-top:2px}
+.ac-feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.ac-feat-grid{grid-template-columns:1fr}}
+.ac-feat-card{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r-md);padding:12px}
+.ac-feat-card .ilbl{margin-top:8px}
+.ac-feat-card .ilbl:first-child{margin-top:0}
+.ac-bulk-wrap textarea.ifield{font-family:monospace;font-size:.78rem;line-height:1.6}
+.ac-course-admin-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--card);border:1px solid var(--bdr);border-radius:10px;margin-bottom:7px}
+.ac-course-admin-idx{font-size:.7rem;color:var(--tx3);font-weight:700;width:26px;flex-shrink:0;text-align:right}
+.ac-course-admin-name{flex:1;font-size:.83rem;font-weight:600;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac-course-admin-name input{width:100%;border:1.5px solid var(--p);border-radius:8px;padding:5px 8px;font-size:.83rem;font-family:var(--fb);color:var(--tx);background:var(--card)}
+.ac-course-admin-actions{display:flex;gap:4px;flex-shrink:0}
+.ac-icon-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--bdr);background:var(--s2);color:var(--tx2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.82rem;transition:all .15s}
+.ac-icon-btn:hover{background:var(--pdim);color:var(--p2);border-color:var(--p)}
+.ac-icon-btn.ac-del:hover{background:var(--rd-dim);color:var(--rd);border-color:var(--rd)}
+.ac-pg-wrap{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:14px}
+.ac-pg-btn{min-width:32px;height:32px;padding:0 8px;border-radius:8px;border:1px solid var(--bdr);background:var(--card);color:var(--tx2);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .15s}
+.ac-pg-btn:hover:not(:disabled){border-color:var(--p);color:var(--p2)}
+.ac-pg-btn.active{background:var(--p);border-color:var(--p);color:#fff}
+.ac-pg-btn:disabled{opacity:.4;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-bg-circle"></div>
+  <div class="auth-bg-circle"></div>
+  <div class="auth-box">
+    <div class="auth-top">
+      <div class="auth-logo"><i class="bi bi-shield-lock-fill"></i></div>
+      <div class="auth-ttl">Smart<span style="color:var(--p)">Admin</span></div>
+      <div class="auth-sub">Secure admin panel for store management</div>
+    </div>
+    <div class="auth-tabs" style="margin:0 28px 0">
+      <div class="auth-tab active" onclick="switchAuthTab('login',this)"><i class="bi bi-box-arrow-in-right" style="font-size:.7rem"></i> Login</div>
+      <div class="auth-tab" onclick="switchAuthTab('register',this)"><i class="bi bi-person-plus" style="font-size:.7rem"></i> Register</div>
+    </div>
+    <!-- LOGIN -->
+    <div class="auth-pane active" id="pane-login">
+      <div class="a-field">
+        <label class="a-lbl">Email</label>
+        <input type="email" id="l-email" class="a-inp" placeholder="admin@example.com" onkeypress="authKey(event,'login')">
+      </div>
+      <div class="a-field">
+        <label class="a-lbl">Password</label>
+        <input type="password" id="l-pass" class="a-inp" placeholder="Your password" onkeypress="authKey(event,'login')">
+      </div>
+      <div class="a-err" id="l-err"></div>
+      <button class="btn-auth" id="l-btn" onclick="doLogin()"><i class="bi bi-box-arrow-in-right"></i>Login</button>
+    </div>
+    <!-- REGISTER -->
+    <div class="auth-pane" id="pane-register">
+      <div class="a-field">
+        <label class="a-lbl">Full Name</label>
+        <input type="text" id="r-name" class="a-inp" placeholder="Admin Name" onkeypress="authKey(event,'register')">
+      </div>
+      <div class="a-field">
+        <label class="a-lbl">Email</label>
+        <input type="email" id="r-email" class="a-inp" placeholder="admin@example.com" onkeypress="authKey(event,'register')">
+      </div>
+      <div class="a-field">
+        <label class="a-lbl">Password <span style="color:var(--tx3);font-size:.65rem;text-transform:none;letter-spacing:0">(min 6 chars)</span></label>
+        <input type="password" id="r-pass" class="a-inp" placeholder="Create password" onkeypress="authKey(event,'register')">
+      </div>
+      <div class="a-field">
+        <label class="a-lbl">Admin Secret Key</label>
+        <input type="password" id="r-key" class="a-inp" placeholder="Enter admin secret key" onkeypress="authKey(event,'register')">
+      </div>
+      <div class="a-err" id="r-err"></div>
+      <button class="btn-auth" id="r-btn" onclick="doRegister()"><i class="bi bi-person-check-fill"></i>Create Admin Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- SIDEBAR TOGGLE (desktop) -->
+  <button class="sb-toggle" id="sb-toggle-btn" onclick="toggleSidebar()">
+    <i class="bi bi-list" id="sb-toggle-icon"></i>
+  </button>
+
+  <!-- OVERLAY (mobile sidebar) -->
+  <div class="sb-overlay" id="sb-overlay" onclick="closeMobileSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="s-head">
+      <div class="s-head-logo"><i class="bi bi-shield-lock-fill"></i></div>
+      <div class="s-head-txt">Smart<span>Admin</span></div>
+      <div class="s-head-badge">ADMIN</div>
+    </div>
+    <nav class="s-nav">
+      <div class="s-lbl">Overview</div>
+      <div class="s-item active" onclick="navTo('dashboard')"><i class="bi bi-speedometer2"></i><span>Dashboard</span></div>
+      <div class="s-lbl">Manage</div>
+      <div class="s-item" onclick="navTo('products')"><i class="bi bi-box-seam-fill"></i><span>Products</span></div>
+      <div class="s-item" onclick="navTo('orders')"><i class="bi bi-receipt"></i><span>Orders</span><span class="s-bdg" id="sb-pending" style="display:none">0</span></div>
+      <div class="s-item" onclick="navTo('bookings')"><i class="bi bi-calendar-check-fill"></i><span>Bookings</span><span class="s-bdg" id="sb-book-pending" style="display:none">0</span></div>
+      <div class="s-item" onclick="navTo('users')"><i class="bi bi-people-fill"></i><span>Users</span></div>
+      <div class="s-item" onclick="navTo('categories')"><i class="bi bi-grid-fill"></i><span>Categories</span></div>
+      <div class="s-item" onclick="navTo('coupons')"><i class="bi bi-tags-fill"></i><span>Coupons</span></div>
+      <div class="s-item" onclick="navTo('sections')"><i class="bi bi-layout-text-sidebar-reverse"></i><span>Sections</span></div>
+      <div class="s-item" onclick="navTo('memberships')"><i class="bi bi-gem"></i><span>Memberships</span></div>
+      <div class="s-item" onclick="navTo('chat')"><i class="bi bi-chat-left-dots-fill"></i><span>Chat</span></div>
+      <div class="s-lbl">System</div>
+      <div class="s-item" onclick="navTo('settings')"><i class="bi bi-gear-fill"></i><span>Settings</span></div>
+    </nav>
+    <div class="s-foot" onclick="doLogout()">
+      <div class="s-av" id="s-av"><span id="s-ini">A</span></div>
+      <div style="flex:1;min-width:0">
+        <div class="s-uname" id="s-uname">Admin</div>
+        <div class="s-urole">Administrator</div>
+      </div>
+      <i class="bi bi-box-arrow-right" style="color:var(--tx3);font-size:.88rem" title="Logout"></i>
+    </div>
+  </aside>
+
+  <!-- TOPBAR (mobile) -->
+  <header class="topbar">
+    <button style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--tx2);padding:4px;margin-right:4px" onclick="openMobileSidebar()"><i class="bi bi-list"></i></button>
+    <div class="t-logo">
+      <div class="t-logo-ico"><i class="bi bi-shield-lock-fill"></i></div>
+      <div class="t-brand">Smart<span>Admin</span></div>
+      <div class="t-badge">ADMIN</div>
+    </div>
+    <div class="t-actions">
+      <div class="t-btn" onclick="navTo('orders')" title="Orders">
+        <i class="bi bi-receipt"></i>
+        <span class="t-btn-bdg" id="t-pending-bdg" style="display:none">0</span>
+      </div>
+      <div class="t-btn" onclick="navTo('bookings')" title="Bookings">
+        <i class="bi bi-calendar-check-fill"></i>
+        <span class="t-btn-bdg" id="t-book-pending" style="display:none">0</span>
+      </div>
+      <div class="t-btn" onclick="navTo('chat')" title="Chat"><i class="bi bi-chat-dots-fill"></i></div>
+    </div>
+  </header>
+
+  <!-- BOTTOM NAV (mobile) -->
+  <nav class="bottom-nav">
+    <div class="bn-item active" id="bn-dashboard" onclick="navTo('dashboard')"><i class="bi bi-speedometer2"></i><span>Home</span></div>
+    <div class="bn-item" id="bn-products" onclick="navTo('products')"><i class="bi bi-box-seam-fill"></i><span>Products</span></div>
+    <div class="bn-item" id="bn-orders" onclick="navTo('orders')">
+      <i class="bi bi-receipt"></i><span>Orders</span>
+      <span class="bn-bdg" id="b-pending-bdg" style="display:none">0</span>
+    </div>
+    <div class="bn-item" id="bn-users" onclick="navTo('users')"><i class="bi bi-people-fill"></i><span>Users</span></div>
+    <div class="bn-item" id="bn-settings" onclick="navTo('settings')"><i class="bi bi-gear-fill"></i><span>More</span></div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="pg">
+        <div class="pg-hdr"><div><div class="pg-ttl">Dashboard</div><div class="pg-sub">Welcome back! Here's your store overview.</div></div></div>
+        <div class="stats-grid">
+          <div class="stat-card teal"><div class="stat-ico teal"><i class="bi bi-box-seam-fill"></i></div><div class="stat-num" id="st-products">0</div><div class="stat-lbl">Total Products</div></div>
+          <div class="stat-card green"><div class="stat-ico green"><i class="bi bi-check-circle-fill"></i></div><div class="stat-num" id="st-confirmed">0</div><div class="stat-lbl">Confirmed Orders</div></div>
+          <div class="stat-card orange"><div class="stat-ico orange"><i class="bi bi-clock-fill"></i></div><div class="stat-num" id="st-pending">0</div><div class="stat-lbl">Pending Orders</div></div>
+          <div class="stat-card blue"><div class="stat-ico blue"><i class="bi bi-people-fill"></i></div><div class="stat-num" id="st-users">0</div><div class="stat-lbl">Total Users</div></div>
+        </div>
+        <div class="dash-grid">
+          <div class="dash-section">
+            <div class="dash-sec-hd">Recent Orders <button class="btn btn-g btn-sm" onclick="navTo('orders')">View All</button></div>
+            <div id="dash-orders"></div>
+          </div>
+          <div class="dash-section">
+            <div class="dash-sec-hd">Recent Products <button class="btn btn-g btn-sm" onclick="navTo('products')">View All</button></div>
+            <div id="dash-products"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="page" id="page-products">
+      <div class="pg">
+        <div class="pg-hdr">
+          <div><div class="pg-ttl">Products</div><div class="pg-sub" id="prod-count-txt">0 products</div></div>
+          <button class="btn btn-p" onclick="showPF()"><i class="bi bi-plus-lg"></i>Add Product</button>
+        </div>
+        <div class="form-panel" id="prod-form">
+          <div class="fp-head"><span><i class="bi bi-box-seam-fill"></i> <span id="pf-head">Add New Product</span></span><button class="fp-close" onclick="hidePF()"><i class="bi bi-x-lg"></i></button></div>
+          <div class="igrp">
+            <label class="ilbl">Banner Image URL (16:9)</label>
+            <input type="url" id="pf-img" class="ifield" placeholder="https://..." oninput="prevBanner(this.value)">
+            <div id="pf-prev" style="margin-top:8px;display:none"><img id="pf-prev-img" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;background:var(--s2)" alt="Preview"></div>
+          </div>
+          <div class="igrp"><label class="ilbl">Product Title *</label><input type="text" id="pf-title" class="ifield" placeholder="Amazing Digital Product"></div>
+          <div class="igrp"><label class="ilbl">Description</label><textarea id="pf-desc" class="ifield" rows="3" placeholder="Detailed product description..."></textarea></div>
+          <div class="f-row">
+            <div class="igrp"><label class="ilbl">Original Price (&#8377;)</label><input type="number" id="pf-orig" class="ifield" placeholder="999" min="0" oninput="calcDisc()"></div>
+            <div class="igrp" style="position:relative"><label class="ilbl">Discount Price (&#8377;) <span style="font-size:.64rem;text-transform:none;letter-spacing:0;color:var(--tx3)">0=free, empty=no discount</span></label><input type="number" id="pf-disc" class="ifield" placeholder="499" min="0" oninput="calcDisc()"><span class="disc-preview" id="disc-prev"></span></div>
+          </div>
+          <div class="igrp"><label class="ilbl">Download Link</label><input type="url" id="pf-link" class="ifield" placeholder="https://drive.google.com/..."></div>
+          <div class="igrp"><label class="ilbl">Category</label>
+            <select id="pf-cat" class="ifield">
+              <option value="">Select Category</option>
+            </select>
+            <div style="font-size:.7rem;color:var(--tx3);margin-top:4px">Categories are managed in the <span style="color:var(--p);cursor:pointer;font-weight:700" onclick="navTo('categories')">Categories section</span></div>
+          </div>
+          <div class="igrp">
+            <label class="ilbl">Media Gallery <span style="font-size:.65rem;text-transform:none;letter-spacing:0;color:var(--tx3)">(Image URLs or Video links — any host — add one by one)</span></label>
+            <div class="ss-add-row">
+              <input type="url" id="pf-ss-inp" class="ifield" placeholder="https://image.jpg  or  any video link (YouTube, Vimeo, Drive, .mp4, etc.)" onkeypress="ssKey(event)" oninput="ssAutoDetect(this.value)">
+              <button class="btn btn-o btn-sm" onclick="addSS()"><i class="bi bi-plus-lg"></i>Add</button>
+            </div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--tx2);margin-top:6px;cursor:pointer">
+              <input type="checkbox" id="pf-ss-is-video" style="width:14px;height:14px;accent-color:var(--p)">
+              This link is a video <span style="color:var(--tx3)">(auto-checked for YouTube/Vimeo/Drive/.mp4 etc. — tick it manually for any other video host)</span>
+            </label>
+            <div class="ss-list" id="ss-list"></div>
+            <div id="ss-empty" style="font-size:.74rem;color:var(--tx3);padding:3px 0">No media added yet — add images and/or video links in any order</div>
+          </div>
+          <input type="hidden" id="pf-edit-id">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-g" onclick="hidePF()" style="flex:1">Cancel</button>
+            <button class="btn btn-p" onclick="saveProd()" style="flex:2"><i class="bi bi-floppy-fill"></i>Save Product</button>
+          </div>
+        </div>
+        <div id="prod-list"></div>
+      </div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="page" id="page-categories">
+      <div class="pg" style="max-width:860px">
+        <div class="pg-hdr">
+          <div><div class="pg-ttl">Categories</div><div class="pg-sub" id="cat-count-txt">0 categories</div></div>
+          <button class="btn btn-p" onclick="showCatForm()"><i class="bi bi-plus-lg"></i>Add Category</button>
+        </div>
+
+        <div class="form-panel" id="cat-form">
+          <div class="fp-head"><span><i class="bi bi-grid-fill"></i> Add New Category</span><button class="fp-close" onclick="hideCatForm()"><i class="bi bi-x-lg"></i></button></div>
+          <div class="f-row">
+            <div class="igrp">
+              <label class="ilbl">Category Name *</label>
+              <input type="text" id="cf-cat-name" class="ifield" placeholder="e.g. Scripts, Templates...">
+            </div>
+            <div class="igrp">
+              <label class="ilbl">Icon <span style="font-size:.65rem;text-transform:none;letter-spacing:0;color:var(--tx3)">(emoji, Bootstrap icon class, or image URL)</span></label>
+              <input type="text" id="cf-cat-icon" class="ifield" placeholder="e.g. 🛠️ or bi-code-slash or https://..." oninput="previewCatIcon(this.value)">
+            </div>
+          </div>
+          <div class="icon-preview-row">
+            <div class="icon-preview-box" id="cat-icon-preview-box"><i class="bi bi-grid-fill"></i></div>
+            <div class="icon-hint">
+              <strong>Icon options:</strong><br>
+              • Emoji: just paste an emoji like 🛠️ or 📁<br>
+              • Bootstrap Icon: type the class like <code>bi-code-slash</code><br>
+              • Image: paste a full image URL
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+            <button class="btn btn-g" onclick="hideCatForm()" style="flex:1">Cancel</button>
+            <button class="btn btn-p" onclick="saveCategory()" style="flex:2"><i class="bi bi-floppy-fill"></i>Save Category</button>
+          </div>
+        </div>
+
+        <div class="info-note" style="margin-bottom:16px"><i class="bi bi-info-circle-fill"></i>Categories saved here appear instantly in the Product Upload dropdown and in the User Panel filter bar. Deleting a category removes it everywhere immediately.</div>
+
+        <div class="cat-grid" id="cat-list">
+          <div class="empty-state"><div class="empty-ico"><i class="bi bi-grid"></i></div><p>No categories yet.<br>Click "Add Category" to create one.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="page" id="page-orders">
+      <div class="pg">
+        <div class="pg-hdr"><div><div class="pg-ttl">Orders</div><div class="pg-sub">Manage customer purchase requests</div></div></div>
+        <div class="filter-tabs">
+          <div class="f-tab active" onclick="setOrdFilter('all',this)">All Orders</div>
+          <div class="f-tab" onclick="setOrdFilter('pending',this)">Pending</div>
+          <div class="f-tab" onclick="setOrdFilter('confirmed',this)">Confirmed</div>
+          <div class="f-tab" onclick="setOrdFilter('rejected',this)">Rejected</div>
+        </div>
+        <div id="ord-list"></div>
+      </div>
+    </div>
+
+    <!-- BOOKINGS -->
+    <div class="page" id="page-bookings">
+      <div class="pg">
+        <div class="pg-hdr"><div><div class="pg-ttl">Consultation Bookings</div><div class="pg-sub">Customers who requested a callback</div></div></div>
+        <div class="filter-tabs">
+          <div class="f-tab active" onclick="setBookFilter('all',this)">All</div>
+          <div class="f-tab" onclick="setBookFilter('new',this)">New</div>
+          <div class="f-tab" onclick="setBookFilter('contacted',this)">Contacted</div>
+        </div>
+        <div id="book-list"></div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="page" id="page-users">
+      <div class="pg">
+        <div class="pg-hdr"><div><div class="pg-ttl">Users</div><div class="pg-sub" id="user-count-txt">0 users</div></div></div>
+        <div class="srch-wrap"><i class="bi bi-search srch-ico"></i><input type="text" class="srch-inp" placeholder="Search users by name or email..." oninput="renderUsers(this.value)"></div>
+        <div id="users-list"></div>
+      </div>
+    </div>
+
+    <!-- COUPONS -->
+    <div class="page" id="page-coupons">
+      <div class="pg">
+        <div class="pg-hdr">
+          <div><div class="pg-ttl">Coupons</div><div class="pg-sub" id="coup-count-txt">0 coupons</div></div>
+          <button class="btn btn-p" onclick="showCF()"><i class="bi bi-plus-lg"></i>New Coupon</button>
+        </div>
+        <div class="form-panel" id="coup-form">
+          <div class="fp-head"><span><i class="bi bi-tags-fill"></i> New Coupon</span><button class="fp-close" onclick="hideCF()"><i class="bi bi-x-lg"></i></button></div>
+          <div class="f-row">
+            <div class="igrp">
+              <label class="ilbl">Coupon Code *</label>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="cf-code" class="ifield" placeholder="SAVE20" style="text-transform:uppercase;letter-spacing:1px;flex:1" oninput="this.value=this.value.toUpperCase()">
+                <button class="btn btn-o btn-sm" onclick="genCode()" style="white-space:nowrap"><i class="bi bi-shuffle"></i>Gen</button>
+              </div>
+            </div>
+            <div class="igrp"><label class="ilbl">Discount Type</label>
+              <select id="cf-type" class="ifield" onchange="onTypeChange()">
+                <option value="percentage">Percentage (%)</option>
+                <option value="fixed">Fixed Amount (&#8377;)</option>
+              </select>
+            </div>
+          </div>
+          <div class="f-row">
+            <div class="igrp" id="pct-field"><label class="ilbl">Percentage (%)</label><input type="number" id="cf-pct" class="ifield" placeholder="20" min="1" max="100"></div>
+            <div class="igrp" id="fix-field" style="display:none"><label class="ilbl">Fixed Amount (&#8377;)</label><input type="number" id="cf-fix" class="ifield" placeholder="100" min="1"></div>
+            <div class="igrp"><label class="ilbl">Min Purchase (&#8377;)</label><input type="number" id="cf-min" class="ifield" placeholder="0" value="0" min="0"></div>
+          </div>
+          <div class="f-row">
+            <div class="igrp"><label class="ilbl">Usage Limit (0=unlimited)</label><input type="number" id="cf-lim" class="ifield" placeholder="0" value="0" min="0"></div>
+            <div class="igrp"><label class="ilbl">Expiry Date</label><input type="date" id="cf-exp" class="ifield"></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-g" onclick="hideCF()" style="flex:1">Cancel</button>
+            <button class="btn btn-p" onclick="saveCoupon()" style="flex:2"><i class="bi bi-floppy-fill"></i>Save Coupon</button>
+          </div>
+        </div>
+        <div id="coup-list"></div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="page" id="page-chat">
+      <div class="pg" style="max-width:100%;padding:12px 12px 12px">
+        <div class="chat-layout">
+          <div class="chat-users" id="chat-users-panel">
+            <div class="chat-users-hd"><i class="bi bi-chat-left-dots-fill" style="color:var(--p);margin-right:6px"></i>Conversations</div>
+            <div id="chat-user-list"></div>
+          </div>
+          <div class="chat-main" id="chat-main">
+            <div class="no-chat" id="no-chat-sel"><i class="bi bi-chat-dots"></i><p>Select a user to<br>start chatting</p></div>
+            <div id="chat-conv-wrap" style="display:none;flex:1;display:none;flex-direction:column">
+              <div style="padding:12px 16px;border-bottom:1px solid var(--bdr);font-family:var(--fd);font-weight:700;font-size:.88rem;color:var(--tx);display:flex;align-items:center;gap:8px" id="chat-conv-header">
+                <div class="cu-av" id="ch-av" style="width:30px;height:30px;font-size:.75rem">U</div>
+                <span id="ch-name">User</span>
+              </div>
+              <div class="chat-msgs" id="a-msgs"></div>
+              <div class="chat-footer">
+                <input type="text" id="a-inp" class="chat-inp" placeholder="Reply to user..." onkeypress="aKey(event)">
+                <button class="chat-send" onclick="sendAdminMsg()"><i class="bi bi-send-fill"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="pg" style="max-width:720px">
+        <div class="pg-hdr"><div><div class="pg-ttl">Settings</div><div class="pg-sub">Configure your SmartStore</div></div></div>
+
+        <div class="settings-sec">
+          <h4><i class="bi bi-bag-heart-fill"></i>Store Info</h4>
+          <div class="f-row">
+            <div class="igrp"><label class="ilbl">Store Name</label><input type="text" id="s-name" class="ifield" placeholder="SmartStore"></div>
+            <div class="igrp"><label class="ilbl">Contact Info</label><input type="text" id="s-contact" class="ifield" placeholder="+91 XXXXXXXXXX"></div>
+          </div>
+          <div class="igrp"><label class="ilbl">Hero Banner Title</label><input type="text" id="s-hero-title" class="ifield" placeholder="Premium Digital Products"></div>
+          <div class="igrp"><label class="ilbl">Hero Banner Subtitle</label><input type="text" id="s-hero-sub" class="ifield" placeholder="Scripts, Templates, Tools..."></div>
+        </div>
+
+        <div class="settings-sec">
+          <h4><i class="bi bi-tags-fill"></i>Global Offer Pricing</h4>
+          <div style="font-size:.76rem;color:var(--tx3);margin-bottom:12px;line-height:1.6">Set one price and every course on the site shows that price instantly — like a site-wide flash sale. Hit "Default" to instantly bring back each course's own original price.</div>
+          <div class="f-row" style="align-items:flex-end">
+            <div class="igrp" style="flex:1">
+              <label class="ilbl">Offer Price for ALL Courses (&#8377;)</label>
+              <input type="number" id="go-price" class="ifield" placeholder="99" min="0">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap">
+            <button class="btn btn-p" style="flex:1" onclick="goApply()"><i class="bi bi-lightning-charge-fill"></i>Apply to All Courses</button>
+            <button class="btn btn-o" style="flex:1" onclick="goReset()"><i class="bi bi-arrow-counterclockwise"></i>Default (Reset)</button>
+          </div>
+          <div id="go-status" style="margin-top:12px;font-size:.78rem;color:var(--tx3);display:flex;align-items:center;gap:6px"><i class="bi bi-info-circle-fill"></i> Default pricing is active — each course shows its own price.</div>
+        </div>
+
+        <div class="settings-sec">
+          <h4><i class="bi bi-credit-card-fill"></i>Payment</h4>
+          <div class="igrp"><label class="ilbl">UPI ID *</label><input type="text" id="s-upi" class="ifield" placeholder="yourname@upi"></div>
+          <div class="info-note"><i class="bi bi-info-circle-fill"></i>This UPI ID will be shown to users for payment. Keep it accurate.</div>
+        </div>
+
+        <div class="settings-sec">
+          <h4><i class="bi bi-link-45deg"></i>Social Links</h4>
+          <div class="f-row">
+            <div class="igrp"><label class="ilbl">Telegram</label><input type="url" id="s-tg" class="ifield" placeholder="https://t.me/..."></div>
+            <div class="igrp"><label class="ilbl">YouTube</label><input type="url" id="s-yt" class="ifield" placeholder="https://youtube.com/..."></div>
+          </div>
+          <div class="f-row">
+            <div class="igrp"><label class="ilbl">Instagram</label><input type="url" id="s-ig" class="ifield" placeholder="https://instagram.com/..."></div>
+            <div class="igrp"><label class="ilbl">Website</label><input type="url" id="s-web" class="ifield" placeholder="https://yoursite.com"></div>
+          </div>
+        </div>
+
+        <div class="settings-sec">
+          <h4><i class="bi bi-file-text-fill"></i>Legal Content</h4>
+          <div class="igrp"><label class="ilbl">Privacy Policy</label><textarea id="s-priv" class="ifield" rows="4" placeholder="Privacy policy..."></textarea></div>
+          <div class="igrp"><label class="ilbl">Terms &amp; Conditions</label><textarea id="s-terms" class="ifield" rows="4" placeholder="Terms and conditions..."></textarea></div>
+        </div>
+
+        <div class="settings-sec">
+          <h4><i class="bi bi-shield-lock-fill"></i>Admin Security</h4>
+          <div class="igrp">
+            <label class="ilbl">Admin Secret Key <span style="font-size:.65rem;text-transform:none;letter-spacing:0;color:var(--tx3)">(for creating new admin accounts)</span></label>
+            <input type="password" id="s-secret" class="ifield" placeholder="Change admin secret key">
+          </div>
+          <div class="igrp">
+            <label class="ilbl">User Panel Admin UID <span style="font-size:.65rem;text-transform:none;letter-spacing:0;color:var(--tx3)">(sync with user panel)</span></label>
+            <input type="text" id="s-uid" class="ifield" placeholder="Your Firebase UID">
+          </div>
+          <div class="info-note"><i class="bi bi-key-fill"></i>Your UID: <span id="my-uid" style="font-family:monospace;font-size:.76rem;word-break:break-all"></span></div>
+        </div>
+
+        <div class="settings-sec">
+          <h4><i class="bi bi-star-fill"></i>Proof &amp; Reviews Images</h4>
+          <div style="font-size:.76rem;color:var(--tx3);margin-bottom:12px;line-height:1.6">Add image URLs to show on the Proof &amp; Reviews page. Add an optional description — if left blank, it shows "Happy Customers" by default.</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
+            <input type="url" id="pr-inp" class="ifield" placeholder="https://your-proof-image.jpg">
+            <div style="display:flex;gap:8px">
+              <input type="text" id="pr-desc-inp" class="ifield" placeholder="Description (optional) e.g. Stock Market Student Review" style="flex:1">
+              <button class="btn btn-o btn-sm" onclick="addProofImg()" style="white-space:nowrap"><i class="bi bi-plus-lg"></i>Add</button>
+            </div>
+          </div>
+          <div id="pr-list" style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px"></div>
+          <div id="pr-empty" style="font-size:.74rem;color:var(--tx3);padding:3px 0">No proof images added yet</div>
+        </div>
+
+        <button class="btn btn-p btn-lg btn-full" onclick="saveSettings()"><i class="bi bi-floppy-fill"></i>Save All Settings</button>
+      </div>
+    </div>
+
+    <!-- SECTIONS -->
+    <div class="page" id="page-sections">
+      <div class="pg" style="max-width:960px">
+        <div class="pg-hdr">
+          <div><div class="pg-ttl">Product Sections</div><div class="pg-sub" id="sec-count-txt">Manage horizontal scroll sections on the user panel</div></div>
+          <button class="btn btn-p" onclick="showSecForm()"><i class="bi bi-plus-lg"></i>New Section</button>
+        </div>
+
+        <div class="info-note" style="margin-bottom:16px"><i class="bi bi-info-circle-fill"></i>Sections appear below the "Load More" button on the user panel as horizontal scroll carousels. Only active sections with at least one product are shown.</div>
+
+        <!-- ADD / EDIT SECTION FORM -->
+        <div class="form-panel" id="sec-form">
+          <div class="fp-head">
+            <span><i class="bi bi-layout-text-sidebar-reverse"></i> <span id="sf-head">New Section</span></span>
+            <button class="fp-close" onclick="hideSecForm()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="f-row">
+            <div class="igrp">
+              <label class="ilbl">Section Title *</label>
+              <input type="text" id="sf-title" class="ifield" placeholder="e.g. Most Popular Courses">
+            </div>
+            <div class="igrp">
+              <label class="ilbl">Display Order <span style="font-size:.64rem;text-transform:none;letter-spacing:0;color:var(--tx3)">(lower = first)</span></label>
+              <input type="number" id="sf-order" class="ifield" placeholder="1" min="0" value="1">
+            </div>
+          </div>
+          <div class="igrp">
+            <label class="ilbl">Status</label>
+            <select id="sf-status" class="ifield">
+              <option value="active">Active (visible)</option>
+              <option value="inactive">Inactive (hidden)</option>
+            </select>
+          </div>
+
+          <!-- Product picker -->
+          <div class="igrp">
+            <label class="ilbl">Products in this section</label>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <input type="text" id="sf-search" class="ifield" placeholder="Search products to add..." oninput="filterSecProducts(this.value)" style="flex:1">
+            </div>
+            <!-- Search results -->
+            <div id="sf-prod-results" style="max-height:220px;overflow-y:auto;border:1.5px solid var(--bdr);border-radius:var(--r-sm);background:var(--s2)">
+              <div style="padding:14px;text-align:center;font-size:.8rem;color:var(--tx3)">Type above to search products</div>
+            </div>
+            <!-- Selected products -->
+            <div style="margin-top:10px">
+              <div style="font-size:.7rem;font-weight:800;color:var(--tx2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Selected Products <span id="sf-sel-count" style="font-weight:600;color:var(--p)">(0)</span></div>
+              <div id="sf-selected-products" style="display:flex;flex-direction:column;gap:6px">
+                <div style="padding:10px;font-size:.8rem;color:var(--tx3);text-align:center" id="sf-sel-empty">No products selected yet</div>
+              </div>
+            </div>
+          </div>
+
+          <input type="hidden" id="sf-edit-id">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+            <button class="btn btn-g" onclick="hideSecForm()" style="flex:1">Cancel</button>
+            <button class="btn btn-p" onclick="saveSection()" style="flex:2"><i class="bi bi-floppy-fill"></i>Save Section</button>
+          </div>
+        </div>
+
+        <!-- SECTIONS LIST -->
+        <div id="sec-list">
+          <div class="empty-state"><div class="empty-ico"><i class="bi bi-layout-text-sidebar-reverse"></i></div><p>No sections yet.<br>Click "New Section" to create one.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MEMBERSHIPS (unlimited membership pages shown on the storefront Membership hub) ===== -->
+    <div class="page" id="page-memberships">
+      <div class="pg" style="max-width:960px">
+        <div class="pg-hdr">
+          <div><div class="pg-ttl">Memberships</div><div class="pg-sub">Add unlimited membership pages — each gets its own images, pricing, description &amp; join message. "Ultra Premium Group" is always shown first and can't be deleted.</div></div>
+          <button class="btn btn-p btn-sm" onclick="clearMshForm();showMshipForm()"><i class="bi bi-plus-lg"></i>Add New Membership</button>
+        </div>
+
+        <div class="ac-stat-row">
+          <div class="ac-stat-card"><div class="ac-stat-num" id="msh-total-num">0</div><div class="ac-stat-lbl">Membership Pages</div></div>
+        </div>
+
+        <!-- FORM (add / edit) -->
+        <div class="settings-sec" id="msh-form" style="display:none">
+          <h4><i class="bi bi-gem"></i><span id="msh-form-ttl">Add New Membership</span></h4>
+
+          <div class="igrp"><label class="ilbl">Name *</label><input type="text" id="msh-name" class="ifield" placeholder="e.g. Algo Bots Membership"></div>
+          <div class="igrp"><label class="ilbl">Short Tagline (shown on the hub card)</label><input type="text" id="msh-tagline" class="ifield" placeholder="e.g. Automated trading bots for every strategy"></div>
+
+          <div class="igrp">
+            <label class="ilbl">Images / Slider <span style="font-size:.65rem;text-transform:none;letter-spacing:0;color:var(--tx3)">(paste an image URL, add as many as you want — no limit)</span></label>
+            <div style="display:flex;gap:8px">
+              <input type="text" id="msh-img-inp" class="ifield" placeholder="https://..." onkeypress="if(event.key==='Enter')mshAddImage()" style="flex:1">
+              <button class="btn btn-o btn-sm" onclick="mshAddImage()" style="white-space:nowrap"><i class="bi bi-plus-lg"></i>Add</button>
+            </div>
+            <div id="msh-img-list" style="margin-top:10px"></div>
+          </div>
+
+          <div class="igrp" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <div style="flex:1;min-width:140px"><label class="ilbl">Original Price (₹)</label><input type="number" id="msh-price-orig" class="ifield" placeholder="99999"></div>
+            <div style="flex:1;min-width:140px"><label class="ilbl">Monthly Price (₹) <span style="font-size:.6rem;color:var(--tx3);text-transform:none">optional</span></label><input type="number" id="msh-price-monthly" class="ifield" placeholder="leave empty to hide"></div>
+            <div style="flex:1;min-width:140px"><label class="ilbl">Lifetime Price (₹)</label><input type="number" id="msh-price-lifetime" class="ifield" placeholder="999"></div>
+          </div>
+
+          <div class="igrp" style="display:flex;align-items:center;gap:8px;background:var(--s2);border-radius:10px;padding:11px 13px">
+            <input type="checkbox" id="msh-popular" style="width:17px;height:17px;accent-color:var(--p);cursor:pointer">
+            <label for="msh-popular" style="font-size:.82rem;font-weight:700;color:var(--tx);cursor:pointer;text-transform:none;letter-spacing:0">🔥 Mark as "Most Popular" — shows a badge on the Membership Hub and this card is listed above other (non-popular) memberships</label>
+          </div>
+
+          <div class="igrp">
+            <label class="ilbl">Feature Boxes <span style="font-size:.65rem;text-transform:none;letter-spacing:0;color:var(--tx3)">(the icon + number cards shown on the membership page — e.g. "1000+ Courses". Add as many as you want)</span></label>
+            <div style="background:var(--s2);border:1.5px dashed var(--bdr);border-radius:12px;padding:12px">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+                <textarea id="msh-feat-icon" class="ifield" rows="2" placeholder="Paste SVG icon code here (e.g. <svg>...</svg>)" style="flex:2;min-width:180px;font-family:monospace;font-size:.72rem"></textarea>
+                <input type="text" id="msh-feat-title" class="ifield" placeholder="Title e.g. 1000+" style="flex:1;min-width:110px">
+                <input type="text" id="msh-feat-label" class="ifield" placeholder="Label e.g. Stock Market Courses" style="flex:1;min-width:140px">
+              </div>
+              <button class="btn btn-o btn-sm" onclick="mshAddFeature()"><i class="bi bi-plus-lg"></i>Add Feature Box</button>
+            </div>
+            <div id="msh-feat-list" style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+          </div>
+
+          <div class="igrp"><label class="ilbl">Description <span style="font-size:.65rem;text-transform:none;letter-spacing:0;color:var(--tx3)">(shown in the "About This Membership" box below the feature boxes)</span></label>
+            <textarea id="msh-desc" class="ifield" rows="5" placeholder="What does this membership include? Write it however you like — line breaks are kept."></textarea>
+          </div>
+
+          <div class="igrp"><label class="ilbl">Telegram Username <span style="font-size:.65rem;text-transform:none;letter-spacing:0;color:var(--tx3)">(without @, leave empty to use your default)</span></label>
+            <input type="text" id="msh-tg" class="ifield" placeholder="TheRonincoursess">
+          </div>
+
+          <div class="igrp"><label class="ilbl">Custom Join Message <span style="font-size:.65rem;text-transform:none;letter-spacing:0;color:var(--tx3)">(optional — pre-fills on Telegram when customer taps Join. Use {name}, {plan}, {price})</span></label>
+            <textarea id="msh-msg-tpl" class="ifield" rows="5" placeholder="HI 👋,&#10;I want to Join Your&#10;({name}) Premium Membership 💎&#10;&#10;📦 Plan: {plan}&#10;💰 Price: {price}"></textarea>
+          </div>
+
+          <div class="igrp"><label class="ilbl">Display Order <span style="font-size:.65rem;text-transform:none;letter-spacing:0;color:var(--tx3)">(lower number shows first, after Ultra Premium Group)</span></label>
+            <input type="number" id="msh-order" class="ifield" placeholder="0"></div>
+
+          <div style="display:flex;gap:10px;margin-top:6px">
+            <button class="btn btn-p btn-sm" onclick="saveMship()"><i class="bi bi-floppy-fill"></i>Save Membership</button>
+            <button class="btn btn-g btn-sm" onclick="hideMshForm()">Cancel</button>
+          </div>
+        </div>
+
+        <div id="msh-admin-list" style="margin-top:16px"></div>
+      </div>
+    </div>
+    <!-- ===== END MEMBERSHIPS ===== -->
+
+  </main>
+</div>
+
+<!-- REVIEWS MODAL -->
+<div id="rev-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,20,18,.55);z-index:9000;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)closeReviewsModal()">
+  <div style="background:var(--card,#fff);border-radius:var(--r-lg,18px);width:100%;max-width:480px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--sh-xl)">
+    <div class="fp-head" style="padding:18px 20px;margin-bottom:0;border-bottom:1px solid var(--bdr)">
+      <span><i class="bi bi-chat-square-text-fill"></i> Reviews &mdash; <span id="rev-modal-title">Product</span></span>
+      <button class="fp-close" onclick="closeReviewsModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div style="padding:18px 20px;overflow-y:auto;flex:1">
+      <div style="background:var(--s2,#f5f5f5);border-radius:12px;padding:14px;margin-bottom:16px">
+        <div style="font-weight:800;font-size:.82rem;color:var(--tx);margin-bottom:10px"><i class="bi bi-plus-circle-fill" style="color:var(--p)"></i> Add New Review</div>
+        <input type="text" id="rev-name-inp" placeholder="Customer name" style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid var(--bdr);font-size:.84rem;margin-bottom:8px;box-sizing:border-box">
+        <select id="rev-rating-inp" style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid var(--bdr);font-size:.84rem;margin-bottom:8px;box-sizing:border-box;background:#fff">
+          <option value="5">★★★★★ (5 stars)</option>
+          <option value="4">★★★★☆ (4 stars)</option>
+          <option value="3">★★★☆☆ (3 stars)</option>
+          <option value="2">★★☆☆☆ (2 stars)</option>
+          <option value="1">★☆☆☆☆ (1 star)</option>
+        </select>
+        <textarea id="rev-comment-inp" placeholder="Review text..." rows="3" style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid var(--bdr);font-size:.84rem;margin-bottom:10px;box-sizing:border-box;resize:vertical"></textarea>
+        <button class="btn btn-p btn-sm" style="width:100%;justify-content:center" onclick="addReview()"><i class="bi bi-send-check-fill"></i> Add Review</button>
+      </div>
+      <div id="rev-list"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script>
+/* ===================================================
+   FIREBASE CONFIG — Replace with your project config
+   =================================================== */
+/* ===================================================
+   FIREBASE REALTIME DATABASE RULES (paste in Firebase Console):
+   {
+     "rules": {
+       "settings":    { ".read": true,  ".write": "auth != null" },
+       "products":    { ".read": true,  ".write": "auth != null" },
+       "categories":  { ".read": true,  ".write": "auth != null" },
+       "all_orders":  {
+         ".read": "auth != null",
+         "$orderId": { ".write": "auth != null || (!data.exists() && newData.child('userId').val() == auth.uid)" }
+       },
+       "purchases":   { "$uid": { ".read": "$uid === auth.uid", ".write": "$uid === auth.uid" } },
+       "users":       { "$uid": { ".read": "$uid === auth.uid || auth != null", ".write": "$uid === auth.uid || auth != null" } },
+       "coupons":     { ".read": true,  ".write": "auth != null" },
+       "chat":        { "$uid": { ".read": "$uid === auth.uid || auth != null", ".write": "$uid === auth.uid || auth != null" } },
+       "admin_config":{ ".read": true,  ".write": "auth != null" },
+       "admins":      { ".read": "auth != null", ".write": "auth != null" },
+       "allCourses":  { ".read": true,  ".write": "auth != null" },
+       "membershipCourses": { ".read": true,  ".write": "auth != null" }
+     }
+   }
+   =================================================== */
+// ============================================================
+// 🔥 FIREBASE CONFIG — REPLACE WITH YOUR PROJECT VALUES BELOW
+// Go to: Firebase Console → Your Project → Project Settings → Your Apps → SDK setup
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCCKoNwD0ekHLl52Rb65yKrMwqzOFqWFCg",
+  authDomain: "algoxmillionaire.firebaseapp.com",
+  databaseURL: "https://algoxmillionaire-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "algoxmillionaire",
+  storageBucket: "algoxmillionaire.firebasestorage.app",
+  messagingSenderId: "509538271310",
+  appId: "1:509538271310:web:dc9121de46f0a76c41431f"
+};
+
+// ============================================================
+firebase.initializeApp(firebaseConfig);
+var auth = firebase.auth();
+var db   = firebase.database();
+
+/* ===================================================
+   STATE
+   =================================================== */
+var adminUser    = null;
+var settings     = {};
+var allProducts  = [];
+var allOrders    = [];
+var allBookings  = [];
+var bookFilter   = 'all';
+var _bookingsReady = false;
+var allUsers     = {};
+var allCoupons   = {};
+var allCategories= {};
+var screenshots  = [];
+var editProdId   = null;
+var ordFilter    = 'all';
+var activeChatUid= null;
+var chatListener = null;
+var sidebarOpen  = true; /* desktop */
+var acSettings   = {};   // All Courses Collection: cover/logo/page2/telegram settings
+var acCourses    = [];   // All Courses Collection: {id,name,createdAt}[]
+var acAdminSearchQ = '';
+var acAdminPage  = 1;
+var acAdminPerPage = 25;
+var acEditingId  = null;
+var mcSettings   = {};   // Membership Courses: independent logo/telegram settings
+var mcCourses    = [];   // Membership Courses: {id,name,createdAt}[] — separate list from acCourses
+var mcAdminSearchQ = '';
+var mcAdminPage  = 1;
+var mcAdminPerPage = 25;
+var mcEditingId  = null;
+var allMemberships = {};   // Memberships: { id: {name,tagline,images[],priceOriginal,priceMonthly,priceLifetime,description,telegramUsername,messageTemplate,order,createdAt} }
+var mshImages    = [];     // working image list for the open membership form
+var mshFeatures  = [];     // working feature-box list ({icon,title,label}) for the open membership form
+var mshEditingId = null;
+
+/* ===================================================
+   AUTH UI
+   =================================================== */
+function switchAuthTab(tab, el) {
+  document.querySelectorAll('.auth-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.auth-pane').forEach(function(p) { p.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('pane-' + tab).classList.add('active');
+}
+function authKey(e, type) { if(e.key==='Enter') { if(type==='login') doLogin(); else doRegister(); } }
+
+function doLogin() {
+  var email = (document.getElementById('l-email').value||'').trim();
+  var pass  = document.getElementById('l-pass').value;
+  var errEl = document.getElementById('l-err');
+  var btn   = document.getElementById('l-btn');
+  errEl.textContent = '';
+  if (!email||!pass) { errEl.textContent='Please fill all fields'; return; }
+  btn.disabled=true; btn.innerHTML='<i class="bi bi-hourglass-split"></i> Logging in...';
+  auth.signInWithEmailAndPassword(email, pass)
+    .catch(function(e) {
+      errEl.textContent = friendlyErr(e.code);
+      btn.disabled=false; btn.innerHTML='<i class="bi bi-box-arrow-in-right"></i>Login';
+    });
+}
+
+function doRegister() {
+  var name  = (document.getElementById('r-name').value||'').trim();
+  var email = (document.getElementById('r-email').value||'').trim();
+  var pass  = document.getElementById('r-pass').value;
+  var key   = (document.getElementById('r-key').value||'').trim();
+  var errEl = document.getElementById('r-err');
+  var btn   = document.getElementById('r-btn');
+  errEl.textContent='';
+  if (!name||!email||!pass||!key) { errEl.textContent='Please fill all fields'; return; }
+  if (pass.length<6) { errEl.textContent='Password must be at least 6 characters'; return; }
+  btn.disabled=true; btn.innerHTML='<i class="bi bi-hourglass-split"></i> Creating...';
+  db.ref('admin_config/secretKey').once('value').then(function(snap) {
+    var validKey = snap.val() || 'nexstore_admin_2024';
+    if (key !== validKey) {
+      errEl.textContent='Invalid admin secret key';
+      btn.disabled=false; btn.innerHTML='<i class="bi bi-person-check-fill"></i>Create Admin Account';
+      return Promise.reject(null); /* stop chain without showing error again */
+    }
+    return auth.createUserWithEmailAndPassword(email, pass).then(function(cred) {
+      return cred.user.updateProfile({ displayName: name }).then(function() {
+        return db.ref('admins/'+cred.user.uid).set({ name:name, email:email, createdAt:Date.now() });
+      });
+    });
+  })
+  .then(function() {
+    toast('Admin account created! Logging in...','ok');
+    btn.disabled=false; btn.innerHTML='<i class="bi bi-person-check-fill"></i>Create Admin Account';
+  })
+  .catch(function(e) {
+    if (e) errEl.textContent = friendlyErr(e.code||'');
+    btn.disabled=false; btn.innerHTML='<i class="bi bi-person-check-fill"></i>Create Admin Account';
+  });
+}
+
+function friendlyErr(code) {
+  var m = {
+    'auth/wrong-password':'Incorrect password','auth/user-not-found':'No account found',
+    'auth/email-already-in-use':'Email already registered','auth/invalid-email':'Invalid email',
+    'auth/weak-password':'Password too weak','auth/invalid-credential':'Invalid credentials',
+    'auth/too-many-requests':'Too many attempts. Try later.'
+  };
+  return m[code] || 'Authentication error';
+}
+
+function doLogout() {
+  if (!confirm('Logout from admin panel?')) return;
+  auth.signOut();
+}
+
+/* ===================================================
+   AUTH LISTENER
+   =================================================== */
+db.ref('admin_config/secretKey').once('value', function(snap) {
+  if (!snap.exists()) db.ref('admin_config/secretKey').set('nexstore_admin_2024');
+});
+
+auth.onAuthStateChanged(function(u) {
+  if (u) {
+    db.ref('admins/'+u.uid).once('value').then(function(snap) {
+      if (!snap.exists()) {
+        return db.ref('admins/'+u.uid).set({
+          name: u.displayName || u.email.split('@')[0] || 'Admin',
+          email: u.email,
+          createdAt: Date.now()
+        });
+      }
+    }).then(function() {
+      adminUser = u;
+      bootstrapApp();
+    }).catch(function() {
+      adminUser = u;
+      bootstrapApp();
+    });
+  } else {
+    adminUser = null;
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+
+/* ===================================================
+   BOOTSTRAP
+   =================================================== */
+function bootstrapApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  var name = adminUser.displayName || adminUser.email.split('@')[0] || 'Admin';
+  var ini  = name.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase()||'A';
+  setTxt('s-uname', name);
+  setTxt('s-ini', ini);
+  setTxt('my-uid', adminUser.uid);
+
+  /* Realtime listeners */
+  db.ref('settings').on('value', function(snap) {
+    settings = snap.val() || {};
+    loadSettingsForm();
+  });
+
+  // Load popular courses for chatbot
+  db.ref('chatbot_config/popularCourses').on('value', function(snap) {
+    var val = snap.val();
+    popularIds = {};
+    if (val) {
+      if (Array.isArray(val)) {
+        val.forEach(function(id){ if(id) popularIds[id]=true; });
+      } else if (typeof val === 'object') {
+        Object.keys(val).forEach(function(k){
+          var v = val[k];
+          if (v === true) popularIds[k] = true;
+          else if (typeof v === 'string' && v) popularIds[v] = true;
+        });
+      }
+    }
+    console.log('[Admin] Popular loaded:', Object.keys(popularIds));
+    // Re-render products to show star badges (only if products already loaded)
+    if (allProducts && allProducts.length && activePage()==='products') renderProducts();
+  });
+
+  db.ref('products').on('value', function(snap) {
+    var raw = snap.val() || {};
+    allProducts = Object.keys(raw).map(function(id) { return Object.assign({id:id}, raw[id]); });
+    allProducts.sort(function(a, b) {
+      var tA = a.createdAt || 0;
+      var tB = b.createdAt || 0;
+      if (tA !== tB) return tB - tA;
+      if (a.id > b.id) return -1;
+      if (a.id < b.id) return 1;
+      return 0;
+    });
+    window._adminAllProducts = allProducts;
+    setTxt('prod-count-txt', allProducts.length + ' product' + (allProducts.length!==1?'s':''));
+    setTxt('st-products', allProducts.length);
+    // Small delay so popularIds listener fires first
+    setTimeout(function(){
+      if (activePage()==='products') renderProducts();
+      renderDashProducts();
+    }, 200);
+  });
+
+  db.ref('all_orders').on('value', function(snap) {
+    var raw = snap.val() || {};
+    allOrders = Object.keys(raw).map(function(id) { return Object.assign({id:id}, raw[id]); });
+    var pending   = allOrders.filter(function(o){return o.status==='pending';}).length;
+    var confirmed = allOrders.filter(function(o){return o.status==='confirmed';}).length;
+    setTxt('st-pending', pending);
+    setTxt('st-confirmed', confirmed);
+    updatePendingBadges(pending);
+    if (activePage()==='orders') renderOrders();
+    renderDashOrders();
+  });
+
+  db.ref('bookings').on('value', function(snap) {
+    var raw = snap.val() || {};
+    var prevIds = allBookings.map(function(b){return b.id;});
+    allBookings = Object.keys(raw).map(function(id) { return Object.assign({id:id}, raw[id]); });
+    allBookings.sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+    var pending = allBookings.filter(function(b){return (b.status||'new')==='new';}).length;
+    ['sb-book-pending','t-book-pending'].forEach(function(id){
+      var el=document.getElementById(id);
+      if (!el) return;
+      el.textContent=pending; el.style.display=pending>0?'':'none';
+    });
+    // 🔔 In-panel notification for newly arrived bookings (skipped on first load)
+    if (_bookingsReady) {
+      allBookings.forEach(function(b){
+        if (prevIds.indexOf(b.id)===-1) {
+          toast('📅 New consultation booking from ' + (b.name||'a customer') + '!', 'ok');
+        }
+      });
+    }
+    _bookingsReady = true;
+    if (activePage()==='bookings') renderBookings();
+  });
+
+  db.ref('users').on('value', function(snap) {
+    allUsers = snap.val() || {};
+    var cnt = Object.keys(allUsers).length;
+    setTxt('st-users', cnt);
+    setTxt('user-count-txt', cnt + ' user' + (cnt!==1?'s':''));
+    if (activePage()==='users') renderUsers();
+  });
+
+  db.ref('coupons').on('value', function(snap) {
+    allCoupons = snap.val() || {};
+    setTxt('coup-count-txt', Object.keys(allCoupons).length + ' coupon(s)');
+    if (activePage()==='coupons') renderCoupons();
+  });
+
+  db.ref('categories').on('value', function(snap) {
+    allCategories = snap.val() || {};
+    var cnt = Object.keys(allCategories).length;
+    setTxt('cat-count-txt', cnt + ' categor' + (cnt===1?'y':'ies'));
+    populateCatDropdown();
+    if (activePage()==='categories') renderCategories();
+  });
+
+  db.ref('chat').on('value', function(snap) {
+    var chatData = snap.val() || {};
+    if (activePage()==='chat') renderChatUsers(chatData);
+  });
+
+  // All Courses Collection — settings (cover/logo/page2/telegram) + course list
+  db.ref('allCourses/settings').on('value', function(snap) {
+    acSettings = snap.val() || {};
+    if (activePage()==='allcourses') loadAcForm();
+  });
+  db.ref('allCourses/courses').on('value', function(snap) {
+    var raw = snap.val() || {};
+    acCourses = Object.keys(raw).map(function(id) {
+      var v = raw[id];
+      return { id: id, name: (typeof v === 'object' ? (v.name || '') : v), createdAt: (typeof v === 'object' ? (v.createdAt || 0) : 0) };
+    });
+    acCourses.sort(function(a,b){ return (a.createdAt||0) - (b.createdAt||0); });
+    setTxt('ac-total-num', acCourses.length);
+    if (activePage()==='allcourses') acRenderAdminList();
+  });
+
+  // Membership Courses — completely separate settings + course list
+  db.ref('membershipCourses/settings').on('value', function(snap) {
+    mcSettings = snap.val() || {};
+    if (activePage()==='mcourses') loadMcForm();
+  });
+  db.ref('memberships').on('value', function(snap) {
+    allMemberships = snap.val() || {};
+    if (activePage() === 'memberships') renderMembershipsAdmin();
+  });
+  db.ref('membershipCourses/courses').on('value', function(snap) {
+    var raw = snap.val() || {};
+    mcCourses = Object.keys(raw).map(function(id) {
+      var v = raw[id];
+      return { id: id, name: (typeof v === 'object' ? (v.name || '') : v), createdAt: (typeof v === 'object' ? (v.createdAt || 0) : 0) };
+    });
+    mcCourses.sort(function(a,b){ return (a.createdAt||0) - (b.createdAt||0); });
+    setTxt('mc-total-num', mcCourses.length);
+    if (activePage()==='mcourses') mcRenderAdminList();
+  });
+
+  navTo('dashboard');
+}
+
+function activePage() {
+  var active = document.querySelector('.page.active');
+  return active ? active.id.replace('page-','') : '';
+}
+
+/* ===================================================
+   NAVIGATION
+   =================================================== */
+function navTo(page) {
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  var el = document.getElementById('page-' + page);
+  if (el) el.classList.add('active');
+
+  document.querySelectorAll('.s-item').forEach(function(n){n.classList.remove('active');});
+  document.querySelectorAll('.s-item').forEach(function(n){
+    var oc = n.getAttribute('onclick')||'';
+    if (oc.indexOf("'" + page + "'")!==-1) n.classList.add('active');
+  });
+
+  /* Bottom nav */
+  document.querySelectorAll('.bn-item').forEach(function(b){b.classList.remove('active');});
+  var bnMap={dashboard:'bn-dashboard',products:'bn-products',orders:'bn-orders',users:'bn-users',settings:'bn-settings',coupons:'bn-settings',chat:'bn-settings'};
+  if (bnMap[page]) { var bn=document.getElementById(bnMap[page]); if(bn) bn.classList.add('active'); }
+
+  window.scrollTo(0,0);
+  closeMobileSidebar();
+
+  if (page==='products') renderProducts();
+  if (page==='orders')   renderOrders();
+  if (page==='bookings') renderBookings();
+  if (page==='users')    renderUsers();
+  if (page==='coupons')  renderCoupons();
+  if (page==='categories') renderCategories();
+  if (page==='memberships') renderMembershipsAdmin();
+  if (page==='chat')     {
+    db.ref('chat').once('value', function(snap){ renderChatUsers(snap.val()||{}); });
+  }
+  if (page==='settings') loadSettingsForm();
+  if (page==='dashboard') { renderDashOrders(); renderDashProducts(); }
+  if (page==='sections') loadSections();
+}
+
+/* ===================================================
+   SIDEBAR TOGGLE (desktop)
+   =================================================== */
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  var sb   = document.getElementById('sidebar');
+  var main = document.getElementById('main');
+  var ico  = document.getElementById('sb-toggle-icon');
+  if (sidebarOpen) {
+    sb.classList.remove('collapsed');
+    main.classList.remove('expanded');
+    ico.className = 'bi bi-list';
+  } else {
+    sb.classList.add('collapsed');
+    main.classList.add('expanded');
+    ico.className = 'bi bi-layout-sidebar';
+  }
+}
+/* Mobile sidebar */
+function openMobileSidebar() {
+  document.getElementById('sidebar').classList.add('mob-open');
+  document.getElementById('sb-overlay').classList.add('open');
+}
+function closeMobileSidebar() {
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('sb-overlay').classList.remove('open');
+}
+
+/* ===================================================
+   PENDING BADGES
+   =================================================== */
+function updatePendingBadges(n) {
+  ['sb-pending','t-pending-bdg','b-pending-bdg'].forEach(function(id){
+    var el=document.getElementById(id);
+    if (!el) return;
+    el.textContent=n; el.style.display=n>0?'':'none';
+  });
+}
+
+/* ===================================================
+   DASHBOARD
+   =================================================== */
+function renderDashOrders() {
+  var el = document.getElementById('dash-orders');
+  if (!el) return;
+  var arr = allOrders.slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);}).slice(0,5);
+  if (!arr.length) { el.innerHTML='<div class="empty-state" style="padding:30px"><div class="empty-ico"><i class="bi bi-receipt"></i></div><p>No orders yet</p></div>'; return; }
+  el.innerHTML = arr.map(function(o) {
+    var st = o.status||'pending';
+    return '<div class="dash-ord-item">'
+      +'<img src="'+(o.productImage||'')+'" style="width:48px;height:32px;border-radius:7px;object-fit:cover;background:var(--s2);flex-shrink:0" onerror="this.style.background=\'var(--s3)\'">'
+      +'<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx)">'+esc(o.productTitle||'')+'</div>'
+      +'<div style="font-size:.7rem;color:var(--tx3)">'+esc(o.userName||o.userEmail||'')+' &bull; \u20B9'+(o.productPrice||0)+'</div></div>'
+      +'<span class="pill pill-'+st+'">'+st+'</span>'
+      +'</div>';
+  }).join('');
+}
+
+function renderDashProducts() {
+  var el = document.getElementById('dash-products');
+  if (!el) return;
+  var arr = allProducts.slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);}).slice(0,5);
+  if (!arr.length) { el.innerHTML='<div class="empty-state" style="padding:30px"><div class="empty-ico"><i class="bi bi-box-seam"></i></div><p>No products yet</p></div>'; return; }
+  el.innerHTML = arr.map(function(p) {
+    var pr = getPrice(p);
+    return '<div class="dash-ord-item">'
+      +'<img src="'+(p.imageUrl||'')+'" style="width:48px;height:32px;border-radius:7px;object-fit:cover;background:var(--s2);flex-shrink:0" onerror="this.style.background=\'var(--s3)\'">'
+      +'<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx)">'+esc(p.title||'Untitled')+'</div>'
+      +'<div style="font-size:.7rem;color:var(--tx3)">'+(p.category||'')+'</div></div>'
+      +'<span style="font-family:var(--fd);font-size:.8rem;font-weight:800;color:var(--p2)">'+(pr===0?'FREE':'\u20B9'+pr)+'</span>'
+      +'</div>';
+  }).join('');
+}
+
+/* ===================================================
+   PRODUCTS
+   =================================================== */
+function getPrice(p) {
+  if (p.discountPrice!=null && p.discountPrice!=='') return parseFloat(p.discountPrice)||0;
+  return parseFloat(p.price)||parseFloat(p.originalPrice)||0;
+}
+
+function showPF() {
+  editProdId=null; screenshots=[];
+  clearPF();
+  setTxt('pf-head','Add New Product');
+  document.getElementById('prod-form').classList.add('open');
+  document.getElementById('prod-form').scrollIntoView({behavior:'smooth'});
+}
+function hidePF() {
+  document.getElementById('prod-form').classList.remove('open');
+  editProdId=null; screenshots=[];
+}
+function clearPF() {
+  ['pf-img','pf-title','pf-desc','pf-orig','pf-disc','pf-link'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  var cat=document.getElementById('pf-cat'); if(cat) cat.value='';
+  document.getElementById('pf-edit-id').value='';
+  document.getElementById('pf-prev').style.display='none';
+  setTxt('disc-prev','');
+  screenshots=[]; renderSSList();
+}
+function prevBanner(url) {
+  var wrap=document.getElementById('pf-prev');
+  var img=document.getElementById('pf-prev-img');
+  if (url) { img.src=url; wrap.style.display='block'; }
+  else wrap.style.display='none';
+}
+function calcDisc() {
+  var orig = parseFloat(document.getElementById('pf-orig').value)||0;
+  var disc = parseFloat(document.getElementById('pf-disc').value);
+  var badge= document.getElementById('disc-prev');
+  if (orig>0 && !isNaN(disc) && disc<orig && disc>=0) {
+    var pct = Math.round(((orig-disc)/orig)*100);
+    badge.textContent = disc===0 ? 'FREE' : pct+'% off';
+  } else { badge.textContent=''; }
+}
+function ssKey(e) { if(e.key==='Enter') addSS(); }
+// ✅ Recognizes known video hosts/file types automatically; anything else the user
+// can still mark manually via the "This link is a video" checkbox.
+function isVideoUrl(url) {
+  if (!url) return false;
+  return /youtube\.com\/watch|youtu\.be\/|youtube\.com\/embed|youtube\.com\/shorts|vimeo\.com\/|drive\.google\.com\/file|dailymotion\.com\/video|dai\.ly\/|streamable\.com\/|loom\.com\/share|\.(mp4|webm|ogg|ogv|mov|m3u8)(\?.*)?$/i.test(url);
+}
+function ssAutoDetect(url) {
+  var box = document.getElementById('pf-ss-is-video');
+  if (box && isVideoUrl(url)) box.checked = true;
+}
+function addSS() {
+  var inp=document.getElementById('pf-ss-inp');
+  var url=inp.value.trim();
+  if (!url) return;
+  var box = document.getElementById('pf-ss-is-video');
+  var isVid = isVideoUrl(url) || (box && box.checked);
+  screenshots.push({ url: url, type: isVid ? 'video' : 'image' });
+  inp.value='';
+  if (box) box.checked = false;
+  renderSSList();
+}
+function removeSS(i) { screenshots.splice(i,1); renderSSList(); }
+function getYTThumb(url) {
+  var vid = '';
+  var m1 = url.match(/[?&]v=([^&]+)/);
+  var m2 = url.match(/youtu\.be\/([^?]+)/);
+  var m3 = url.match(/embed\/([^?]+)/);
+  if (m1) vid = m1[1];
+  else if (m2) vid = m2[1];
+  else if (m3) vid = m3[1];
+  return vid ? 'https://img.youtube.com/vi/'+vid+'/mqdefault.jpg' : '';
+}
+function renderSSList() {
+  var el=document.getElementById('ss-list');
+  var empty=document.getElementById('ss-empty');
+  if (!screenshots.length) { el.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  el.innerHTML = screenshots.map(function(item,i){
+    // Backward-compat: old saved products may still have plain URL strings
+    var url = (typeof item === 'string') ? item : item.url;
+    var type = (typeof item === 'string') ? (isVideoUrl(item) ? 'video' : 'image') : item.type;
+    var isVid = type === 'video';
+    var isYT = /youtube\.com\/watch|youtu\.be\/|youtube\.com\/embed/.test(url);
+    var thumb = isYT ? getYTThumb(url) : (isVid ? '' : url);
+    var typePill = isVid
+      ? '<span style="font-size:.58rem;font-weight:800;color:#fff;background:#ef4444;border-radius:4px;padding:2px 6px;flex-shrink:0;cursor:pointer" onclick="toggleSSType('+i+')"><i class="bi bi-camera-video-fill"></i> VIDEO</span>'
+      : '<span style="font-size:.58rem;font-weight:800;color:var(--p);background:var(--pdim);border-radius:4px;padding:2px 6px;flex-shrink:0;cursor:pointer" onclick="toggleSSType('+i+')"><i class="bi bi-image"></i> IMG</span>';
+    return '<div class="ss-item">'
+      +(thumb ? '<img class="ss-img" src="'+esc(thumb)+'" onerror="this.style.background=\'var(--s3)\'">' : '<div class="ss-img" style="background:var(--s3);display:flex;align-items:center;justify-content:center"><i class="bi bi-play-circle-fill" style="color:var(--rd);font-size:1.2rem"></i></div>')
+      +typePill
+      +'<span class="ss-url">'+esc(url)+'</span>'
+      +'<button class="ico-btn del" onclick="removeSS('+i+')"><i class="bi bi-trash3"></i></button></div>';
+  }).join('');
+}
+// Click the IMG/VIDEO pill to flip an item's type if auto-detection guessed wrong
+function toggleSSType(i) {
+  var item = screenshots[i];
+  if (typeof item === 'string') item = { url: item, type: isVideoUrl(item) ? 'video' : 'image' };
+  item.type = item.type === 'video' ? 'image' : 'video';
+  screenshots[i] = item;
+  renderSSList();
+}
+function saveProd() {
+  var title = (document.getElementById('pf-title').value||'').trim();
+  if (!title) { toast('Product title is required','err'); return; }
+  var orig = parseFloat(document.getElementById('pf-orig').value)||0;
+  var discVal = document.getElementById('pf-disc').value;
+  var disc = discVal===''||discVal===null ? null : parseFloat(discVal);
+  var data = {
+    title:       title,
+    description: document.getElementById('pf-desc').value||'',
+    imageUrl:    document.getElementById('pf-img').value.trim(),
+    originalPrice: orig,
+    price:       disc!=null ? disc : orig,
+    discountPrice: disc,
+    downloadLink: document.getElementById('pf-link').value.trim(),
+    category:    document.getElementById('pf-cat').value||'',
+    screenshots: screenshots.slice(),
+    updatedAt:   Date.now()
+  };
+  if (!editProdId) data.createdAt = Date.now();
+  var id = editProdId || db.ref('products').push().key;
+  db.ref('products/'+id).update(data)
+    .then(function(){ toast(editProdId?'Product updated!':'Product added!','ok'); hidePF(); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+function editProd(id) {
+  var p = allProducts.filter(function(x){return x.id===id;})[0];
+  if (!p) return;
+  editProdId = id;
+  var rawSS = p.screenshots ? (Array.isArray(p.screenshots)?p.screenshots:Object.values(p.screenshots)) : [];
+  // ✅ Migrate old plain-URL-string format to {url,type} so editing old products still works
+  screenshots = rawSS.map(function(item){
+    if (typeof item === 'string') return { url: item, type: isVideoUrl(item) ? 'video' : 'image' };
+    return item;
+  });
+  setTxt('pf-head','Edit Product');
+  document.getElementById('pf-img').value   = p.imageUrl||'';
+  document.getElementById('pf-title').value = p.title||'';
+  document.getElementById('pf-desc').value  = p.description||'';
+  document.getElementById('pf-orig').value  = p.originalPrice||p.price||0;
+  document.getElementById('pf-disc').value  = p.discountPrice!=null?p.discountPrice:'';
+  document.getElementById('pf-link').value  = p.downloadLink||'';
+  // Set category in dynamic dropdown
+  var catSelect = document.getElementById('pf-cat');
+  var catVal = p.category||'';
+  if (catSelect) catSelect.value = catVal;
+  prevBanner(p.imageUrl||''); calcDisc(); renderSSList();
+  document.getElementById('prod-form').classList.add('open');
+  document.getElementById('prod-form').scrollIntoView({behavior:'smooth'});
+}
+function deleteProd(id) {
+  if (!confirm('Delete this product permanently?')) return;
+  db.ref('products/'+id).remove()
+    .then(function(){ toast('Product deleted','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+function renderProducts() {
+  var el = document.getElementById('prod-list');
+  if (!allProducts.length) {
+    el.innerHTML='<div class="empty-state"><div class="empty-ico"><i class="bi bi-box-seam"></i></div><p>No products yet.<br>Click "Add Product" to create one.</p></div>';
+    return;
+  }
+  el.innerHTML = allProducts.map(function(p) {
+    var pr    = getPrice(p);
+    var orig  = parseFloat(p.originalPrice)||0;
+    var isFree= pr===0;
+    var hasDis= orig>0 && pr<orig;
+    var pct   = hasDis ? Math.round(((orig-pr)/orig)*100) : 0;
+    var ss    = p.screenshots ? (Array.isArray(p.screenshots)?p.screenshots:Object.values(p.screenshots)) : [];
+    var isPop = !!popularIds[p.id];
+    return '<div class="list-item" style="'+(isPop?'border-color:#f59e0b':'')+'">'
+      +'<img class="li-thumb" src="'+(p.imageUrl||'')+'" onerror="this.style.background=\'var(--s3)\'">'
+      +'<div class="li-info">'
+      +'<div class="li-title">'+esc(p.title||'Untitled')+(isPop?' <span style="font-size:.62rem;background:#f59e0b;color:#fff;padding:1px 7px;border-radius:10px;font-weight:700;vertical-align:middle;margin-left:4px">⭐ Popular</span>':'')+' </div>'
+      +'<div class="li-meta">'+(p.category||'No category')+' &bull; '+ss.length+' screenshot(s)</div>'
+      +'<div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+      +(isFree?'<span class="pill pill-free">FREE</span>'
+        :'<span class="li-price">\u20B9'+pr+'</span>'+(hasDis?'<span class="li-orig">\u20B9'+orig+'</span><span style="font-size:.68rem;color:var(--gr);font-weight:700">'+pct+'% off</span>':''))
+      +'<button class="pop-toggle'+(isPop?' active':'')+'" onclick="togglePopular(\''+p.id+'\')">'
+      +(isPop?'⭐ Remove Popular':'☆ Mark Popular')
+      +'</button>'
+      +'</div></div>'
+      +'<div class="li-actions">'
+      +'<button class="ico-btn" onclick="openReviewsModal(\''+p.id+'\',\''+esc(p.title||'Untitled').replace(/'/g,"\\'")+'\')" title="Reviews"><i class="bi bi-chat-square-text-fill"></i></button>'
+      +'<button class="ico-btn" onclick="editProd(\''+p.id+'\')" title="Edit"><i class="bi bi-pencil-fill"></i></button>'
+      +'<button class="ico-btn del" onclick="deleteProd(\''+p.id+'\')" title="Delete"><i class="bi bi-trash3-fill"></i></button>'
+      +'</div></div>';
+    }).join('');
+}
+
+/* ===================================================
+   REVIEWS (manual, per-product)
+   =================================================== */
+var _revCurrentProdId = null;
+
+function openReviewsModal(productId, productTitle) {
+  _revCurrentProdId = productId;
+  document.getElementById('rev-modal-title').textContent = productTitle || 'Product';
+  document.getElementById('rev-name-inp').value = '';
+  document.getElementById('rev-comment-inp').value = '';
+  document.getElementById('rev-rating-inp').value = '5';
+  document.getElementById('rev-modal-overlay').style.display = 'flex';
+  loadReviewsList();
+}
+function closeReviewsModal() {
+  document.getElementById('rev-modal-overlay').style.display = 'none';
+  _revCurrentProdId = null;
+}
+function loadReviewsList() {
+  var el = document.getElementById('rev-list');
+  if (!_revCurrentProdId) return;
+  el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--tx3);font-size:.8rem">Loading...</div>';
+  db.ref('reviews/' + _revCurrentProdId).once('value', function(snap) {
+    var raw  = snap.val() || {};
+    var data = Object.keys(raw).map(function(id) { var r = raw[id]; r.id = id; return r; });
+    data.sort(function(a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    if (!data.length) {
+      el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--tx3);font-size:.82rem">No reviews added yet for this product.</div>';
+      return;
+    }
+    el.innerHTML = data.map(function(r) {
+      var rating = Math.max(1, Math.min(5, parseInt(r.rating) || 5));
+      var stars  = '★★★★★'.substring(0, rating) + '☆☆☆☆☆'.substring(0, 5 - rating);
+      return '<div style="border:1px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:8px">'
+        + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+        + '<div><div style="font-weight:800;font-size:.84rem;color:var(--tx)">' + esc(r.name || 'Customer') + '</div>'
+        + '<div style="font-size:.76rem;color:#f59e0b">' + stars + '</div></div>'
+        + '<button class="ico-btn del" style="flex-shrink:0" onclick="deleteReview(\'' + r.id + '\')" title="Delete"><i class="bi bi-trash3-fill"></i></button>'
+        + '</div>'
+        + '<div style="font-size:.8rem;color:var(--tx2);margin-top:6px;line-height:1.5">' + esc(r.comment || '') + '</div>'
+        + '</div>';
+    }).join('');
+  });
+}
+function addReview() {
+  if (!_revCurrentProdId) return;
+  var name    = document.getElementById('rev-name-inp').value.trim();
+  var rating  = document.getElementById('rev-rating-inp').value;
+  var comment = document.getElementById('rev-comment-inp').value.trim();
+  if (!name)    { toast('Please enter customer name', 'err'); return; }
+  if (!comment) { toast('Please enter review text', 'err'); return; }
+  db.ref('reviews/' + _revCurrentProdId).push({
+    name: name,
+    rating: parseInt(rating),
+    comment: comment,
+    createdAt: Date.now()
+  }).then(function() {
+    document.getElementById('rev-name-inp').value = '';
+    document.getElementById('rev-comment-inp').value = '';
+    document.getElementById('rev-rating-inp').value = '5';
+    toast('Review added!', 'ok');
+    loadReviewsList();
+  }).catch(function(e) { toast('Error: ' + e.message, 'err'); });
+}
+function deleteReview(reviewId) {
+  if (!_revCurrentProdId) return;
+  if (!confirm('Delete this review?')) return;
+  db.ref('reviews/' + _revCurrentProdId + '/' + reviewId).remove()
+    .then(function() { toast('Review deleted', 'ok'); loadReviewsList(); })
+    .catch(function(e) { toast('Error: ' + e.message, 'err'); });
+}
+
+/* ── POPULAR TOGGLE ── */
+function togglePopular(id) {
+  var isNowPop = !popularIds[id];
+  if (isNowPop) {
+    popularIds[id] = true;
+  } else {
+    delete popularIds[id];
+  }
+  // Save as object {id: true} — arrays in Firebase become objects with numeric keys
+  var obj = {};
+  Object.keys(popularIds).forEach(function(k){ if(popularIds[k]) obj[k]=true; });
+  db.ref('chatbot_config/popularCourses').set(Object.keys(obj).length ? obj : null, function(err) {
+    if (err) {
+      showToast('Error saving: ' + err.message, 'error');
+    } else {
+      showToast(isNowPop ? '⭐ Added to Popular Courses!' : '☆ Removed from Popular', isNowPop ? 'success' : 'info');
+      renderProducts();
+    }
+  });
+}
+
+/* ===================================================
+   CATEGORIES
+   =================================================== */
+function populateCatDropdown() {
+  var sel = document.getElementById('pf-cat');
+  if (!sel) return;
+  var prev = sel.value;
+  sel.innerHTML = '<option value="">Select Category</option>';
+  var cats = Object.keys(allCategories).map(function(id) {
+    return { id: id, name: allCategories[id].name || '' };
+  }).sort(function(a, b) { return a.name.localeCompare(b.name); });
+  cats.forEach(function(c) {
+    var opt = document.createElement('option');
+    opt.value = c.name;
+    opt.textContent = c.name;
+    sel.appendChild(opt);
+  });
+  if (prev) sel.value = prev;
+}
+
+function renderCategories() {
+  var el = document.getElementById('cat-list');
+  if (!el) return;
+  var cats = Object.keys(allCategories).map(function(id) {
+    return Object.assign({ id: id }, allCategories[id]);
+  }).sort(function(a, b) { return (a.name||'').localeCompare(b.name||''); });
+
+  var cnt = cats.length;
+  setTxt('cat-count-txt', cnt + ' categor' + (cnt===1?'y':'ies'));
+
+  if (!cnt) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-ico"><i class="bi bi-grid"></i></div><p>No categories yet.<br>Click "Add Category" to create one.</p></div>';
+    return;
+  }
+  el.innerHTML = cats.map(function(c) {
+    var icon = c.icon || '';
+    var iconHtml = buildIconHtml(icon, 'cat-icon-preview');
+    return '<div class="cat-card">'
+      + '<div class="cat-icon-preview">' + iconHtml + '</div>'
+      + '<div class="cat-info">'
+      + '<div class="cat-name">' + esc(c.name || 'Unnamed') + '</div>'
+      + '<div class="cat-sub">' + esc(icon || 'No icon') + '</div>'
+      + '</div>'
+      + '<button class="ico-btn del" onclick="deleteCategory(\'' + c.id + '\',\'' + esc(c.name||'') + '\')" title="Delete Category"><i class="bi bi-trash3-fill"></i></button>'
+      + '</div>';
+  }).join('');
+}
+
+function buildIconHtml(icon, cls) {
+  if (!icon) return '<i class="bi bi-grid-fill" style="color:var(--p)"></i>';
+  icon = icon.trim();
+  // Check if it's a URL
+  if (icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('//')) {
+    return '<img src="' + esc(icon) + '" style="width:36px;height:36px;object-fit:cover;border-radius:8px" onerror="this.style.display=\'none\'">';
+  }
+  // Check if it's an emoji (starts with unicode emoji-like character, not alphanumeric)
+  var firstCode = icon.codePointAt(0);
+  if (firstCode > 127) { // Non-ASCII = emoji territory
+    return '<span style="font-size:1.3rem;line-height:1">' + esc(icon) + '</span>';
+  }
+  // Bootstrap icon class
+  var cls2 = icon.startsWith('bi-') ? icon : 'bi-' + icon;
+  return '<i class="bi ' + esc(cls2) + '" style="color:var(--p);font-size:1.1rem"></i>';
+}
+
+function previewCatIcon(val) {
+  var box = document.getElementById('cat-icon-preview-box');
+  if (!box) return;
+  if (!val.trim()) { box.innerHTML = '<i class="bi bi-grid-fill" style="color:var(--p)"></i>'; return; }
+  box.innerHTML = buildIconHtml(val.trim(), '');
+}
+
+function showCatForm() {
+  var el = document.getElementById('cat-form');
+  if (!el) return;
+  document.getElementById('cf-cat-name').value = '';
+  document.getElementById('cf-cat-icon').value = '';
+  var box = document.getElementById('cat-icon-preview-box');
+  if (box) box.innerHTML = '<i class="bi bi-grid-fill" style="color:var(--p)"></i>';
+  el.classList.add('open');
+  el.scrollIntoView({ behavior: 'smooth' });
+}
+
+function hideCatForm() {
+  var el = document.getElementById('cat-form');
+  if (el) el.classList.remove('open');
+}
+
+function saveCategory() {
+  var name = (document.getElementById('cf-cat-name').value || '').trim();
+  if (!name) { toast('Category name is required', 'err'); return; }
+  var icon = (document.getElementById('cf-cat-icon').value || '').trim();
+  // Prevent duplicates
+  var exists = Object.values(allCategories).some(function(c) {
+    return (c.name || '').toLowerCase() === name.toLowerCase();
+  });
+  if (exists) { toast('A category with this name already exists', 'err'); return; }
+  var id = db.ref('categories').push().key;
+  db.ref('categories/' + id).set({ name: name, icon: icon, createdAt: Date.now() })
+    .then(function() {
+      toast('Category "' + name + '" added!', 'ok');
+      hideCatForm();
+    })
+    .catch(function(e) { toast('Error: ' + e.message, 'err'); });
+}
+
+function deleteCategory(id, name) {
+  if (!confirm('Delete category "' + name + '"?\n\nProducts assigned to this category will remain but will show no category.')) return;
+  db.ref('categories/' + id).remove()
+    .then(function() { toast('Category deleted', 'ok'); })
+    .catch(function(e) { toast('Error: ' + e.message, 'err'); });
+}
+
+/* ===================================================
+   ORDERS
+   =================================================== */
+function setOrdFilter(f, el) {
+  ordFilter = f;
+  document.querySelectorAll('.f-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  renderOrders();
+}
+function renderOrders() {
+  var el  = document.getElementById('ord-list');
+  var arr = allOrders.slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+  if (ordFilter!=='all') arr = arr.filter(function(o){return (o.status||'pending')===ordFilter;});
+  if (!arr.length) {
+    el.innerHTML='<div class="empty-state"><div class="empty-ico"><i class="bi bi-receipt-cutoff"></i></div><p>No '+(ordFilter==='all'?'':ordFilter+' ')+'orders found</p></div>';
+    return;
+  }
+  el.innerHTML = arr.map(function(o) {
+    var st   = o.status||'pending';
+    var conf = st==='confirmed';
+    var rej  = st==='rejected';
+    var dt   = fmtDate(o.createdAt);
+    var itemsHtml = '';
+    if (o.items && o.items.length) {
+      o.items.forEach(function(it){
+        itemsHtml += '<div style="font-size:.76rem;color:var(--tx2)">\u2022 '+esc(it.title||'')+' &mdash; \u20B9'+it.price+'</div>';
+      });
+    } else {
+      itemsHtml = '<div style="font-size:.76rem;color:var(--tx2)">\u2022 '+esc(o.productTitle||'Product')+'</div>';
+    }
+    return '<div class="ord-card '+st+'">'
+      +'<div class="ord-top">'
+      +'<img class="ord-thumb" src="'+(o.productImage||'')+'" onerror="this.style.background=\'var(--s3)\'">'
+      +'<div class="ord-info">'
+      +'<div class="ord-name">'+esc(o.productTitle||'Product')+'</div>'
+      +'<div class="ord-meta">'
+      +'<i class="bi bi-person-fill" style="color:var(--p);font-size:.72rem"></i> '+esc(o.userName||'')+(o.userEmail?' &mdash; '+esc(o.userEmail):'')
+      +'<br><i class="bi bi-currency-rupee" style="color:var(--or);font-size:.72rem"></i> \u20B9'+((o.productPrice||0))
+      +(o.couponUsed?'<br><i class="bi bi-tag-fill" style="color:var(--gr);font-size:.72rem"></i> Coupon: '+esc(o.couponUsed):'')
+      +'<br><i class="bi bi-calendar3" style="font-size:.72rem"></i> '+dt
+      +'</div>'
+      +'<div class="ord-utr"><i class="bi bi-hash"></i> UTR: '+esc(o.utrId||'N/A')+'</div>'
+      +(o.items&&o.items.length?'<div style="margin-top:6px">'+itemsHtml+'</div>':'')
+      +'</div>'
+      +'<span class="pill pill-'+st+'" style="flex-shrink:0">'
+      +(conf?'<i class="bi bi-check-circle-fill"></i> Confirmed':rej?'<i class="bi bi-x-circle-fill"></i> Rejected':'<i class="bi bi-clock-fill"></i> Pending')
+      +'</span>'
+      +'</div>'
+      +'<div class="ord-actions">'
+      +(!conf?'<button class="btn btn-gr btn-sm" onclick="confirmOrder(\''+o.id+'\',\''+o.userId+'\',\''+esc(o.productLink||'')+'\')"><i class="bi bi-check2-circle"></i>Confirm &amp; Set Link</button>':'')
+      +(!rej?'<button class="btn btn-rd btn-sm" onclick="rejectOrder(\''+o.id+'\',\''+o.userId+'\')"><i class="bi bi-x-circle"></i>Reject</button>':'')
+      +'<button class="btn btn-g btn-sm" onclick="deleteOrder(\''+o.id+'\',\''+o.userId+'\')"><i class="bi bi-trash3"></i>Delete</button>'
+      +'</div></div>';
+  }).join('');
+}
+
+/* ===================================================
+   BOOKINGS (Consultation requests from website)
+   =================================================== */
+function setBookFilter(f, el) {
+  bookFilter = f;
+  document.querySelectorAll('#page-bookings .f-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  renderBookings();
+}
+function renderBookings() {
+  var el  = document.getElementById('book-list');
+  var arr = allBookings.slice();
+  if (bookFilter!=='all') arr = arr.filter(function(b){return (b.status||'new')===bookFilter;});
+  if (!arr.length) {
+    el.innerHTML='<div class="empty-state"><div class="empty-ico"><i class="bi bi-calendar-x"></i></div><p>No '+(bookFilter==='all'?'':bookFilter+' ')+'bookings found</p></div>';
+    return;
+  }
+  el.innerHTML = arr.map(function(b) {
+    var st = b.status||'new';
+    var done = st==='contacted';
+    var dt = fmtDate(b.createdAt);
+    return '<div class="ord-card '+st+'">'
+      +'<div class="ord-top">'
+      +'<div class="ord-info">'
+      +'<div class="ord-name"><i class="bi bi-person-fill" style="color:var(--p)"></i> '+esc(b.name||'Unknown')+'</div>'
+      +'<div class="ord-meta">'
+      +'<i class="bi bi-telephone-fill" style="color:var(--or);font-size:.72rem"></i> '+esc(b.phone||'N/A')
+      +'<br><i class="bi bi-robot" style="color:var(--p);font-size:.72rem"></i> '+esc(b.botName||'Not specified')
+      +'<br><i class="bi bi-calendar3" style="font-size:.72rem"></i> '+dt
+      +'</div>'
+      +'</div>'
+      +'<span class="pill pill-'+st+'" style="flex-shrink:0">'
+      +(done?'<i class="bi bi-check-circle-fill"></i> Contacted':'<i class="bi bi-clock-fill"></i> New')
+      +'</span>'
+      +'</div>'
+      +'<div class="ord-actions">'
+      +'<a class="btn btn-gr btn-sm" href="tel:'+esc(b.phone||'')+'"><i class="bi bi-telephone-fill"></i>Call Now</a>'
+      +(!done?'<button class="btn btn-p btn-sm" onclick="markBookingContacted(\''+b.id+'\')"><i class="bi bi-check2-circle"></i>Mark Contacted</button>':'')
+      +'<button class="btn btn-g btn-sm" onclick="deleteBooking(\''+b.id+'\')"><i class="bi bi-trash3"></i>Delete</button>'
+      +'</div></div>';
+  }).join('');
+}
+function markBookingContacted(id) {
+  db.ref('bookings/'+id+'/status').set('contacted')
+    .then(function(){ toast('Marked as contacted','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+function deleteBooking(id) {
+  if (!confirm('Delete this booking permanently?')) return;
+  db.ref('bookings/'+id).remove()
+    .then(function(){ toast('Booking deleted','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function confirmOrder(oid, uid, existingLink) {
+  var link = prompt('Enter download link for this order (leave blank to use product link):', existingLink||'');
+  if (link === null) return; /* cancelled */
+  var updates = { status:'confirmed' };
+  if (link.trim()) updates.productLink = link.trim();
+  db.ref('all_orders/'+oid).update(updates)
+    .then(function() {
+      if (uid) {
+        db.ref('purchases/'+uid+'/'+oid).update({ status:'confirmed' });
+      }
+      toast('Order confirmed!','ok');
+    })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+function rejectOrder(oid, uid) {
+  if (!confirm('Reject this order?')) return;
+  db.ref('all_orders/'+oid+'/status').set('rejected')
+    .then(function() {
+      if (uid) db.ref('purchases/'+uid+'/'+oid+'/status').set('rejected');
+      toast('Order rejected','ok');
+    })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+function deleteOrder(oid, uid) {
+  if (!confirm('Delete this order permanently?')) return;
+  db.ref('all_orders/'+oid).remove()
+    .then(function() {
+      if (uid) db.ref('purchases/'+uid+'/'+oid).remove();
+      toast('Order deleted','ok');
+    })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+/* ===================================================
+   USERS
+   =================================================== */
+function renderUsers(q) {
+  q = q || '';
+  var el  = document.getElementById('users-list');
+  var arr = Object.keys(allUsers).map(function(uid){ return Object.assign({uid:uid}, allUsers[uid]); });
+  if (q) {
+    var lq = q.toLowerCase();
+    arr = arr.filter(function(u){
+      return (u.name||'').toLowerCase().indexOf(lq)!==-1 || (u.email||'').toLowerCase().indexOf(lq)!==-1;
+    });
+  }
+  if (!arr.length) {
+    el.innerHTML='<div class="empty-state"><div class="empty-ico"><i class="bi bi-people"></i></div><p>'+(q?'No users match your search':'No users yet')+'</p></div>';
+    return;
+  }
+  el.innerHTML = arr.map(function(u) {
+    var ords = allOrders.filter(function(o){return o.userId===u.uid;}).length;
+    return '<div class="user-card">'
+      +'<div class="u-av">'+(u.photo?'<img src="'+esc(u.photo)+'" onerror="this.style.display=\'none\'">':(u.name||'U')[0].toUpperCase())+'</div>'
+      +'<div class="u-info">'
+      +'<div class="u-name">'+esc(u.name||'User')+'</div>'
+      +'<div class="u-email">'+esc(u.email||u.uid)+'</div>'
+      +'<div class="u-meta">'+ords+' order(s) &bull; Last seen: '+(u.lastSeen?fmtDate(u.lastSeen):'Unknown')+'</div>'
+      +'</div>'
+      +'<button class="ico-btn" onclick="openUserChat(\''+u.uid+'\')" title="Chat with user"><i class="bi bi-chat-dots-fill"></i></button>'
+      +'</div>';
+  }).join('');
+}
+function openUserChat(uid) {
+  navTo('chat');
+  setTimeout(function(){ selectChatUser(uid); }, 300);
+}
+
+/* ===================================================
+   COUPONS
+   =================================================== */
+function showCF() {
+  ['cf-code','cf-pct','cf-fix','cf-min','cf-lim','cf-exp'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('cf-type').value='percentage'; onTypeChange();
+  document.getElementById('coup-form').classList.add('open');
+  document.getElementById('coup-form').scrollIntoView({behavior:'smooth'});
+}
+function hideCF() { document.getElementById('coup-form').classList.remove('open'); }
+function onTypeChange() {
+  var t = document.getElementById('cf-type').value;
+  document.getElementById('pct-field').style.display = t==='percentage'?'':'none';
+  document.getElementById('fix-field').style.display = t==='fixed'?'':'none';
+}
+function genCode() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var code  = '';
+  for (var i=0;i<8;i++) code += chars[Math.floor(Math.random()*chars.length)];
+  document.getElementById('cf-code').value = code;
+}
+function saveCoupon() {
+  var code = (document.getElementById('cf-code').value||'').trim().toUpperCase();
+  if (!code) { toast('Coupon code required','err'); return; }
+  var type = document.getElementById('cf-type').value;
+  var val  = type==='percentage' ? parseFloat(document.getElementById('cf-pct').value)||0 : parseFloat(document.getElementById('cf-fix').value)||0;
+  if (!val) { toast('Enter discount value','err'); return; }
+  var data = {
+    type:       type,
+    value:      val,
+    minPurchase:parseFloat(document.getElementById('cf-min').value)||0,
+    usageLimit: parseInt(document.getElementById('cf-lim').value)||0,
+    expiryDate: document.getElementById('cf-exp').value,
+    active:     true,
+    usageCount: 0
+  };
+  db.ref('coupons/'+code).set(data)
+    .then(function(){ toast('Coupon saved!','ok'); hideCF(); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+function toggleCoupon(code, newVal) {
+  db.ref('coupons/'+code+'/active').set(newVal)
+    .then(function(){ toast('Coupon '+(newVal?'activated':'deactivated'),'ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+function deleteCoupon(code) {
+  if (!confirm('Delete coupon "'+code+'"?')) return;
+  db.ref('coupons/'+code).remove()
+    .then(function(){ toast('Coupon deleted','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+function renderCoupons() {
+  var el  = document.getElementById('coup-list');
+  var arr = Object.keys(allCoupons).map(function(code){ return Object.assign({code:code}, allCoupons[code]); });
+  if (!arr.length) {
+    el.innerHTML='<div class="empty-state"><div class="empty-ico"><i class="bi bi-tags"></i></div><p>No coupons yet</p></div>';
+    return;
+  }
+  el.innerHTML = arr.map(function(c) {
+    return '<div class="coup-card">'
+      +'<div class="coup-code">'+esc(c.code)+'</div>'
+      +'<div class="coup-info">'
+      +'<div style="font-size:.78rem;font-weight:700;color:var(--tx);margin-bottom:2px">'
+      +(c.type==='percentage'?c.value+'% off':'&#8377;'+c.value+' off')
+      +(c.minPurchase?'<span style="color:var(--tx3);font-weight:400"> &bull; Min \u20B9'+c.minPurchase+'</span>':'')
+      +'</div>'
+      +'<div style="font-size:.72rem;color:var(--tx3)">Used: '+(c.usageCount||0)+(c.usageLimit?'/'+c.usageLimit:' (unlimited)')
+      +(c.expiryDate?' &bull; Exp: '+c.expiryDate:'')+'</div>'
+      +'</div>'
+      +'<button onclick="toggleCoupon(\''+esc(c.code)+'\','+(c.active?'false':'true')+')" class="btn btn-sm '+(c.active?'btn-gr':'btn-rd')+'">'+(c.active?'Active':'Inactive')+'</button>'
+      +'<button class="ico-btn del" onclick="deleteCoupon(\''+esc(c.code)+'\')"><i class="bi bi-trash3-fill"></i></button>'
+      +'</div>';
+  }).join('');
+}
+
+/* ===================================================
+   CHAT
+   =================================================== */
+function renderChatUsers(chatData) {
+  var el = document.getElementById('chat-user-list');
+  if (!el) return;
+  var uids = Object.keys(chatData);
+  if (!uids.length) {
+    el.innerHTML='<div class="empty-state" style="padding:30px"><div class="empty-ico" style="font-size:2rem"><i class="bi bi-chat-dots"></i></div><p>No conversations</p></div>';
+    return;
+  }
+  el.innerHTML = uids.map(function(uid) {
+    var msgs   = chatData[uid];
+    var msgArr = Object.values(msgs||{}).sort(function(a,b){return (a.timestamp||0)-(b.timestamp||0);});
+    var last   = msgArr[msgArr.length-1];
+    var uInfo  = allUsers[uid] || {};
+    var uName  = uInfo.name || uid.slice(0,8)+'...';
+    var ini    = (uName[0]||'U').toUpperCase();
+    return '<div class="cu-item'+(uid===activeChatUid?' active':'')+'" onclick="selectChatUser(\''+uid+'\',\''+esc(uName)+'\',\''+esc(ini)+'\')">'
+      +'<div class="cu-av">'+ini+'</div>'
+      +'<div style="flex:1;min-width:0"><div class="cu-name">'+esc(uName)+'</div>'
+      +'<div class="cu-prev">'+(last?esc((last.text||'').substring(0,28)):'No messages')+'</div></div>'
+      +'</div>';
+  }).join('');
+}
+
+function selectChatUser(uid, name, ini) {
+  activeChatUid = uid;
+  var uInfo = allUsers[uid]||{};
+  var uName = name || uInfo.name || uid.slice(0,10)+'...';
+  var uIni  = ini  || (uName[0]||'U').toUpperCase();
+
+  setTxt('ch-name', uName);
+  setHTML('ch-av', uIni);
+
+  /* Re-highlight in list */
+  document.querySelectorAll('.cu-item').forEach(function(el){ el.classList.remove('active'); });
+  document.querySelectorAll('.cu-item').forEach(function(el){
+    var oc = el.getAttribute('onclick')||'';
+    if (oc.indexOf("'"+uid+"'")!==-1) el.classList.add('active');
+  });
+
+  var noChat = document.getElementById('no-chat-sel');
+  var convWrap = document.getElementById('chat-conv-wrap');
+  if (noChat) noChat.style.display='none';
+  if (convWrap) { convWrap.style.display='flex'; convWrap.style.flexDirection='column'; convWrap.style.flex='1'; }
+
+  if (chatListener) chatListener();
+  chatListener = db.ref('chat/'+uid).on('value', function(snap) {
+    renderChatMsgs(snap.val()||{});
+  });
+}
+
+function renderChatMsgs(msgs) {
+  var el = document.getElementById('a-msgs');
+  if (!el) return;
+  var arr = Object.values(msgs).sort(function(a,b){return (a.timestamp||0)-(b.timestamp||0);});
+  if (!arr.length) { el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:30px;font-size:.82rem">No messages yet</div>'; return; }
+  el.innerHTML = arr.map(function(m) {
+    return '<div style="display:flex;flex-direction:column;'+(m.sender==='admin'?'align-items:flex-end':'align-items:flex-start')+'">'
+      +'<div class="bubble bubble-'+(m.sender==='admin'?'a':'u')+'">'+esc(m.text||'')+'<span class="bubble-time">'+fmtTime(m.timestamp)+'</span></div></div>';
+  }).join('');
+  setTimeout(function(){ el.scrollTop=el.scrollHeight; },50);
+}
+
+function aKey(e) { if(e.key==='Enter') sendAdminMsg(); }
+function sendAdminMsg() {
+  if (!activeChatUid) return;
+  var inp = document.getElementById('a-inp');
+  var txt = (inp.value||'').trim();
+  if (!txt) return;
+  inp.value='';
+  var mid = db.ref().push().key;
+  db.ref('chat/'+activeChatUid+'/'+mid).set({ text:txt, sender:'admin', timestamp:Date.now() });
+}
+
+/* ===================================================
+   SETTINGS
+   =================================================== */
+var globalOfferState = { active:false, price:'' };
+
+function loadSettingsForm() {
+  var fields = {
+    's-name': settings.appName||'SmartStore',
+    's-upi':  settings.upiId||'',
+    's-tg':   settings.telegramLink||'',
+    's-yt':   settings.youtubeLink||'',
+    's-ig':   settings.instagramLink||'',
+    's-web':  settings.websiteLink||'',
+    's-priv': settings.privacy||'',
+    's-terms':settings.terms||'',
+    's-contact':settings.contact||'',
+    's-uid':  settings.adminUid||'',
+    's-hero-title': settings.heroTitle||'',
+    's-hero-sub':   settings.heroSub||''
+  };
+  Object.keys(fields).forEach(function(id){ var el=document.getElementById(id); if(el) el.value=fields[id]; });
+  if (adminUser) setTxt('my-uid', adminUser.uid);
+  // Load proof images — support both old string[] and new object[] format
+  var proofRaw = settings.proofImages ? (Array.isArray(settings.proofImages)?settings.proofImages:Object.values(settings.proofImages)) : [];
+  var proofImgs = proofRaw.map(function(item) {
+    if (typeof item === 'string') return { url: item, description: '' };
+    return { url: item.url || '', description: item.description || '' };
+  });
+  renderProofList(proofImgs);
+
+  // Load global offer pricing
+  var go = settings.globalOffer || {};
+  globalOfferState = { active: !!go.active, price: (go.price != null ? go.price : '') };
+  goPopulateForm();
+}
+
+function saveSettings() {
+  var data = {
+    appName:       (document.getElementById('s-name').value||'').trim()||'SmartStore',
+    upiId:         (document.getElementById('s-upi').value||'').trim(),
+    telegramLink:  (document.getElementById('s-tg').value||'').trim(),
+    youtubeLink:   (document.getElementById('s-yt').value||'').trim(),
+    instagramLink: (document.getElementById('s-ig').value||'').trim(),
+    websiteLink:   (document.getElementById('s-web').value||'').trim(),
+    privacy:       (document.getElementById('s-priv').value||'').trim(),
+    terms:         (document.getElementById('s-terms').value||'').trim(),
+    contact:       (document.getElementById('s-contact').value||'').trim(),
+    adminUid:      (document.getElementById('s-uid').value||'').trim(),
+    heroTitle:     (document.getElementById('s-hero-title').value||'').trim(),
+    heroSub:       (document.getElementById('s-hero-sub').value||'').trim(),
+    proofImages:   proofImagesList.slice(),
+    globalOffer:   globalOfferState
+  };
+  db.ref('settings').set(data).then(function() {
+    var secretVal = (document.getElementById('s-secret').value||'').trim();
+    if (secretVal) return db.ref('admin_config/secretKey').set(secretVal);
+  })
+  .then(function(){ toast('Settings saved!','ok'); })
+  .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+/* ===================================================
+   PROOF & REVIEWS IMAGES
+   =================================================== */
+var proofImagesList = [];
+
+function renderProofList(arr) {
+  proofImagesList = arr || [];
+  var el = document.getElementById('pr-list');
+  var empty = document.getElementById('pr-empty');
+  if (!el) return;
+  if (!proofImagesList.length) { el.innerHTML=''; if(empty) empty.style.display='block'; return; }
+  if(empty) empty.style.display='none';
+  el.innerHTML = proofImagesList.map(function(item, i) {
+    var url  = (typeof item === 'object') ? (item.url || '') : item;
+    var desc = (typeof item === 'object') ? (item.description || '') : '';
+    return '<div class="ss-item" style="flex-direction:column;align-items:flex-start;gap:4px">'
+      +'<div style="display:flex;align-items:center;gap:8px;width:100%">'
+      +'<img class="ss-img" src="'+esc(url)+'" onerror="this.style.background=\'var(--s3)\'">'
+      +'<div style="flex:1;min-width:0">'
+      +'<div class="ss-url" style="font-size:.72rem">'+esc(url)+'</div>'
+      +(desc ? '<div style="font-size:.7rem;color:var(--p2);font-weight:600;margin-top:2px">📝 '+esc(desc)+'</div>' : '<div style="font-size:.68rem;color:var(--tx3);font-style:italic;margin-top:2px">No description (shows "Happy Customers")</div>')
+      +'</div>'
+      +'<button class="ico-btn del" onclick="removeProofImg('+i+')"><i class="bi bi-trash3"></i></button>'
+      +'</div></div>';
+  }).join('');
+}
+
+function addProofImg() {
+  var inp  = document.getElementById('pr-inp');
+  var dinp = document.getElementById('pr-desc-inp');
+  var url  = (inp ? inp.value : '').trim();
+  if (!url) { toast('Please enter an image URL', 'err'); return; }
+  var desc = (dinp ? dinp.value : '').trim();
+  proofImagesList.push({ url: url, description: desc });
+  if (inp)  inp.value  = '';
+  if (dinp) dinp.value = '';
+  renderProofList(proofImagesList);
+}
+
+function removeProofImg(i) {
+  proofImagesList.splice(i, 1);
+  renderProofList(proofImagesList);
+}
+
+/* ===================================================
+   GLOBAL OFFER PRICING (override every course's price)
+   =================================================== */
+function goPopulateForm() {
+  var inp = document.getElementById('go-price');
+  if (inp && globalOfferState.price !== '' && globalOfferState.price != null) inp.value = globalOfferState.price;
+  var st = document.getElementById('go-status');
+  if (!st) return;
+  if (globalOfferState.active) {
+    st.innerHTML = '<i class="bi bi-check-circle-fill" style="color:var(--gr)"></i> Offer is <b style="color:var(--gr)">LIVE</b> — every course shows &#8377;' + globalOfferState.price + ' on the site.';
+  } else {
+    st.innerHTML = '<i class="bi bi-info-circle-fill"></i> Default pricing is active — each course shows its own price.';
+  }
+}
+
+function goApply() {
+  var val = parseFloat(document.getElementById('go-price').value);
+  if (isNaN(val) || val < 0) { toast('Enter a valid offer price', 'err'); return; }
+  globalOfferState = { active: true, price: val };
+  db.ref('settings/globalOffer').set(globalOfferState)
+    .then(function () { toast('Offer price \u20B9' + val + ' applied to all courses!', 'ok'); goPopulateForm(); })
+    .catch(function (e) { toast('Error: ' + e.message, 'err'); });
+}
+
+function goReset() {
+  globalOfferState = { active: false, price: globalOfferState.price };
+  db.ref('settings/globalOffer').set(globalOfferState)
+    .then(function () { toast('Reverted to default course prices', 'ok'); goPopulateForm(); })
+    .catch(function (e) { toast('Error: ' + e.message, 'err'); });
+}
+
+/* ===================================================
+   PRODUCT SECTIONS MANAGEMENT
+   =================================================== */
+var adminProducts = []; // will be populated from loadProducts
+var popularIds = {}; // chatbot popular courses {id: true}
+var sfSelectedProducts = {}; // {id: {title, imageUrl, price}}
+
+// Called from navTo('sections')
+function loadSections() {
+  db.ref('product_sections').once('value', function(snap) {
+    var raw = snap.val() || {};
+    var sections = Object.keys(raw).map(function(id) {
+      var s = raw[id];
+      s.id = id;
+      return s;
+    }).sort(function(a,b){ return (a.order||0)-(b.order||0); });
+    renderSectionsList(sections);
+    setTxt('sec-count-txt', sections.length + ' sections');
+  });
+}
+
+function renderSectionsList(sections) {
+  var el = document.getElementById('sec-list');
+  if (!el) return;
+  if (!sections.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-ico"><i class="bi bi-layout-text-sidebar-reverse"></i></div><p>No sections yet.<br>Click "New Section" to create one.</p></div>';
+    return;
+  }
+  el.innerHTML = sections.map(function(s) {
+    var productIds = s.products ? Object.keys(s.products) : [];
+    var isActive = s.status === 'active';
+    var chips = productIds.slice(0,5).map(function(pid) {
+      return '<div class="sec-prod-chip"><i class="bi bi-box-seam"></i>' + esc(s.products[pid] && s.products[pid].title ? s.products[pid].title.slice(0,22)+'…' : pid) + '</div>';
+    }).join('');
+    var more = productIds.length > 5 ? '<div class="sec-prod-chip">+' + (productIds.length-5) + ' more</div>' : '';
+
+    return '<div class="sec-admin-item">'
+      + '<div class="sec-admin-info">'
+      + '<div class="sec-admin-title">' + esc(s.title||'Untitled Section') + '</div>'
+      + '<div class="sec-admin-meta">'
+      + '<span><i class="bi bi-layers" style="color:var(--p)"></i> Order: ' + (s.order||0) + '</span>'
+      + '<span><i class="bi bi-box-seam" style="color:var(--p)"></i> ' + productIds.length + ' products</span>'
+      + '<span class="pill ' + (isActive?'pill-active':'pill-inactive') + '">' + (isActive?'<i class="bi bi-eye-fill"></i> Active':'<i class="bi bi-eye-slash-fill"></i> Hidden') + '</span>'
+      + '</div>'
+      + (chips ? '<div class="sec-prod-chips">' + chips + more + '</div>' : '')
+      + '</div>'
+      + '<div class="sec-admin-actions">'
+      + '<button class="btn btn-o btn-sm" onclick="editSection(\'' + s.id + '\')"><i class="bi bi-pencil"></i>Edit</button>'
+      + '<button class="btn btn-g btn-sm" onclick="toggleSectionStatus(\'' + s.id + '\',\'' + s.status + '\')">'
+      + (isActive ? '<i class="bi bi-eye-slash"></i>Disable' : '<i class="bi bi-eye"></i>Enable') + '</button>'
+      + '<button class="btn btn-rd btn-sm" onclick="deleteSection(\'' + s.id + '\')"><i class="bi bi-trash3"></i>Del</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function showSecForm(reset) {
+  sfSelectedProducts = {};
+  var form = document.getElementById('sec-form');
+  if (form) form.classList.add('open');
+  document.getElementById('sf-edit-id').value = '';
+  document.getElementById('sf-title').value = '';
+  document.getElementById('sf-order').value = '1';
+  document.getElementById('sf-status').value = 'active';
+  document.getElementById('sf-search').value = '';
+  document.getElementById('sf-prod-results').innerHTML = '<div style="padding:14px;text-align:center;font-size:.8rem;color:var(--tx3)">Type above to search products</div>';
+  setTxt('sf-head', 'New Section');
+  renderSelectedProducts();
+}
+
+function hideSecForm() {
+  var form = document.getElementById('sec-form');
+  if (form) form.classList.remove('open');
+}
+
+function editSection(sectionId) {
+  db.ref('product_sections/' + sectionId).once('value', function(snap) {
+    var s = snap.val();
+    if (!s) { toast('Section not found','err'); return; }
+    sfSelectedProducts = {};
+    if (s.products) {
+      Object.keys(s.products).forEach(function(pid) {
+        sfSelectedProducts[pid] = s.products[pid];
+      });
+    }
+    var form = document.getElementById('sec-form');
+    if (form) form.classList.add('open');
+    document.getElementById('sf-edit-id').value = sectionId;
+    document.getElementById('sf-title').value = s.title || '';
+    document.getElementById('sf-order').value = s.order != null ? s.order : 1;
+    document.getElementById('sf-status').value = s.status || 'active';
+    document.getElementById('sf-search').value = '';
+    document.getElementById('sf-prod-results').innerHTML = '<div style="padding:14px;text-align:center;font-size:.8rem;color:var(--tx3)">Type above to search products</div>';
+    setTxt('sf-head', 'Edit Section');
+    renderSelectedProducts();
+    form.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+}
+
+function saveSection() {
+  var title = (document.getElementById('sf-title').value || '').trim();
+  if (!title) { toast('Please enter a section title', 'err'); document.getElementById('sf-title').focus(); return; }
+  var order  = parseInt(document.getElementById('sf-order').value) || 0;
+  var status = document.getElementById('sf-status').value || 'active';
+  var editId = document.getElementById('sf-edit-id').value;
+
+  var data = {
+    title: title,
+    order: order,
+    status: status,
+    products: sfSelectedProducts,
+    updatedAt: Date.now()
+  };
+
+  var ref;
+  if (editId) {
+    ref = db.ref('product_sections/' + editId).update(data);
+  } else {
+    data.createdAt = Date.now();
+    ref = db.ref('product_sections').push(data);
+  }
+
+  Promise.resolve(ref).then(function() {
+    toast(editId ? 'Section updated!' : 'Section created!', 'ok');
+    hideSecForm();
+    loadSections();
+  }).catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function deleteSection(sectionId) {
+  if (!confirm('Delete this section? This cannot be undone.')) return;
+  db.ref('product_sections/' + sectionId).remove()
+    .then(function(){ toast('Section deleted','ok'); loadSections(); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function toggleSectionStatus(sectionId, currentStatus) {
+  var newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+  db.ref('product_sections/' + sectionId).update({ status: newStatus, updatedAt: Date.now() })
+    .then(function(){ toast('Section ' + (newStatus === 'active' ? 'enabled' : 'disabled'), 'ok'); loadSections(); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+/* ---- Product search inside section form ---- */
+function filterSecProducts(q) {
+  var el = document.getElementById('sf-prod-results');
+  if (!el) return;
+  q = (q || '').trim().toLowerCase();
+  if (!q) {
+    el.innerHTML = '<div style="padding:14px;text-align:center;font-size:.8rem;color:var(--tx3)">Type above to search products</div>';
+    return;
+  }
+  var adminProds = window._adminAllProducts || [];
+  var matches = adminProds.filter(function(p) {
+    return (p.title||p.name||'').toLowerCase().indexOf(q) !== -1;
+  }).slice(0, 20);
+
+  if (!matches.length) {
+    el.innerHTML = '<div style="padding:14px;text-align:center;font-size:.8rem;color:var(--tx3)">No products found</div>';
+    return;
+  }
+  el.innerHTML = matches.map(function(p) {
+    var title = p.title || p.name || 'Untitled';
+    var img = p.imageUrl || p.image || '';
+    var origP = parseFloat(p.originalPrice) || 0;
+    var discP = (p.discountPrice != null && p.discountPrice !== '') ? parseFloat(p.discountPrice) : null;
+    var price = discP != null ? discP : (parseFloat(p.price) || origP);
+    var alreadyAdded = !!sfSelectedProducts[p.id];
+    return '<div class="sf-prod-row' + (alreadyAdded?' added':'') + '" onclick="' + (alreadyAdded?'':'addToSection(\''+p.id+'\')') + '">'
+      + '<img class="sf-prod-img" src="' + esc(img||'https://placehold.co/80x50/e2f4f1/0a7a6e?text=P') + '" onerror="this.src=\'https://placehold.co/80x50/e2f4f1/0a7a6e?text=P\'">'
+      + '<span class="sf-prod-name">' + esc(title) + '</span>'
+      + '<span class="sf-prod-price">' + (price===0?'FREE':'₹'+price) + '</span>'
+      + (alreadyAdded ? '<span style="font-size:.72rem;color:var(--gr);font-weight:700">Added</span>' : '<button class="btn btn-p btn-sm" style="pointer-events:none">+ Add</button>')
+      + '</div>';
+  }).join('');
+}
+
+function addToSection(productId) {
+  var prod = (window._adminAllProducts||[]).find(function(p){ return p.id === productId; });
+  if (!prod) return;
+  var title = prod.title || prod.name || 'Untitled';
+  var img = prod.imageUrl || prod.image || '';
+  var origP = parseFloat(prod.originalPrice) || 0;
+  var discP = (prod.discountPrice != null && prod.discountPrice !== '') ? parseFloat(prod.discountPrice) : null;
+  var price = discP != null ? discP : (parseFloat(prod.price) || origP);
+  sfSelectedProducts[productId] = { title: title, imageUrl: img, price: price };
+  renderSelectedProducts();
+  // Refresh search results to show "Added" state
+  filterSecProducts(document.getElementById('sf-search').value);
+}
+
+function removeFromSection(productId) {
+  delete sfSelectedProducts[productId];
+  renderSelectedProducts();
+  filterSecProducts(document.getElementById('sf-search').value);
+}
+
+function renderSelectedProducts() {
+  var el = document.getElementById('sf-selected-products');
+  var emptyEl = document.getElementById('sf-sel-empty');
+  var cntEl = document.getElementById('sf-sel-count');
+  if (!el) return;
+  var ids = Object.keys(sfSelectedProducts);
+  if (cntEl) cntEl.textContent = '(' + ids.length + ')';
+  if (!ids.length) {
+    el.innerHTML = '<div style="padding:10px;font-size:.8rem;color:var(--tx3);text-align:center" id="sf-sel-empty">No products selected yet</div>';
+    return;
+  }
+  el.innerHTML = ids.map(function(pid) {
+    var p = sfSelectedProducts[pid];
+    var title = p.title || pid;
+    var img = p.imageUrl || '';
+    return '<div class="sf-sel-row">'
+      + '<img class="sf-sel-img" src="' + esc(img||'https://placehold.co/80x50/e2f4f1/0a7a6e?text=P') + '" onerror="this.src=\'https://placehold.co/80x50/e2f4f1/0a7a6e?text=P\'">'
+      + '<span class="sf-sel-name">' + esc(title) + '</span>'
+      + '<button class="sf-sel-remove" onclick="removeFromSection(\'' + pid + '\')" title="Remove"><i class="bi bi-x-lg"></i></button>'
+      + '</div>';
+  }).join('');
+}
+
+/* ===================================================
+   UTILS
+   =================================================== */
+function fmtDate(ts) {
+  if (!ts) return 'Unknown';
+  return new Date(ts).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+function fmtTime(ts) {
+  if (!ts) return '';
+  var d=new Date(ts), now=new Date();
+  var diff=Math.floor((now-d)/(86400000));
+  if (diff===0) return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  if (diff===1) return 'Yesterday';
+  return fmtDate(ts);
+}
+function esc(s) {
+  if (!s && s!==0) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+function setTxt(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
+function setHTML(id,v){ var el=document.getElementById(id); if(el) el.innerHTML=v; }
+
+var _toastT;
+function toast(msg, type) {
+  type=type||'info';
+  var w=document.getElementById('toast-wrap');
+  var ic={ok:'bi-check-circle-fill',err:'bi-x-circle-fill',info:'bi-info-circle-fill'};
+  var cl={ok:'var(--gr)',err:'var(--rd)',info:'var(--p)'};
+  w.innerHTML='<div class="toast-pill"><i class="bi '+(ic[type]||ic.info)+'" style="color:'+(cl[type]||cl.info)+'"></i>'+esc(String(msg))+'</div>';
+  clearTimeout(_toastT);
+  _toastT=setTimeout(function(){w.innerHTML='';},4000);
+}
+
+/* ===================================================
+   ALL COURSES COLLECTION
+   =================================================== */
+
+// Populate the form fields from acSettings (called on page load + realtime updates)
+function loadAcForm() {
+  var logo = acSettings.logoImage || '';
+  var logoImg = document.getElementById('ac-logo-img-prev');
+  var logoPh  = document.getElementById('ac-logo-ph');
+  if (logo) { logoImg.src = logo; logoImg.style.display = 'block'; logoPh.style.display = 'none'; }
+  else      { logoImg.style.display = 'none'; logoPh.style.display = 'flex'; }
+
+  setVal('ac-brand-handle', acSettings.brandHandle || '@TheRoninCourse');
+  setVal('ac-tg-username', acSettings.telegramUsername || 'TheRonincoursess');
+  setTxt('ac-total-num', acCourses.length);
+}
+function setVal(id, v) { var el=document.getElementById(id); if (el) el.value = v; }
+
+// Compress + resize an image file client-side, then store as a base64 data-URL
+// directly in the existing Firebase Realtime Database (no separate storage system).
+function acUploadImage(inputEl, settingKey, previewImgId, previewPhId, maxDim, quality, settingsPath) {
+  settingsPath = settingsPath || 'allCourses/settings';
+  var file = inputEl.files && inputEl.files[0];
+  if (!file) return;
+  if (!file.type || file.type.indexOf('image/') !== 0) { toast('Please choose an image file','err'); return; }
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w >= h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+        else        { w = Math.round(w * (maxDim / h)); h = maxDim; }
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var isPng = /png/i.test(file.type);
+      var dataUrl = isPng ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', quality || 0.75);
+
+      // If a PNG turned out too large (no lossy compression), fall back to JPEG
+      if (dataUrl.length > 900000 && isPng) dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+
+      var prevImg = document.getElementById(previewImgId);
+      var prevPh  = document.getElementById(previewPhId);
+      prevImg.src = dataUrl; prevImg.style.display = 'block';
+      if (prevPh) prevPh.style.display = 'none';
+
+      var update = {}; update[settingKey] = dataUrl;
+      db.ref(settingsPath).update(update)
+        .then(function(){ toast('Image saved!','ok'); })
+        .catch(function(err){ toast('Error: '+err.message,'err'); });
+    };
+    img.onerror = function(){ toast('Could not read image','err'); };
+    img.src = e.target.result;
+  };
+  reader.onerror = function(){ toast('Could not read file','err'); };
+  reader.readAsDataURL(file);
+  inputEl.value = '';
+}
+
+function acSaveBrand() {
+  var handle = (document.getElementById('ac-brand-handle').value||'').trim() || '@TheRoninCourse';
+  db.ref('allCourses/settings').update({ brandHandle: handle })
+    .then(function(){ toast('Brand saved!','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function acSaveTelegram() {
+  var uname = (document.getElementById('ac-tg-username').value||'').trim().replace(/^@/,'') || 'TheRonincoursess';
+  db.ref('allCourses/settings').update({ telegramUsername: uname })
+    .then(function(){ toast('Telegram settings saved!','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function acAddSingleCourse() {
+  var inp = document.getElementById('ac-single-course');
+  var name = (inp.value||'').trim();
+  if (!name) { toast('Enter a course name','err'); return; }
+  db.ref('allCourses/courses').push({ name: name, createdAt: Date.now() })
+    .then(function(){ inp.value=''; toast('Course added!','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function acBulkAddCourses() {
+  var ta = document.getElementById('ac-bulk-courses');
+  var lines = (ta.value||'').split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+  if (!lines.length) { toast('Paste at least one course name','err'); return; }
+  var updates = {};
+  var now = Date.now();
+  lines.forEach(function(name, i) {
+    var key = db.ref('allCourses/courses').push().key;
+    updates[key] = { name: name, createdAt: now + i }; // +i keeps paste order stable
+  });
+  db.ref('allCourses/courses').update(updates)
+    .then(function(){ ta.value=''; toast(lines.length + ' course(s) added!','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function acStartEdit(id) {
+  acEditingId = id;
+  acRenderAdminList();
+  setTimeout(function(){
+    var inp = document.getElementById('ac-edit-inp-'+id);
+    if (inp) { inp.focus(); inp.select(); }
+  }, 30);
+}
+
+function acCancelEdit() { acEditingId = null; acRenderAdminList(); }
+
+function acSaveEdit(id) {
+  var inp = document.getElementById('ac-edit-inp-'+id);
+  var name = (inp.value||'').trim();
+  if (!name) { toast('Course name cannot be empty','err'); return; }
+  db.ref('allCourses/courses/'+id).update({ name: name })
+    .then(function(){ acEditingId=null; toast('Course updated!','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function acDeleteCourse(id, name) {
+  if (!confirm('Delete "'+name+'"? This cannot be undone.')) return;
+  db.ref('allCourses/courses/'+id).remove()
+    .then(function(){ toast('Course deleted','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function acAdminSearch(q) {
+  acAdminSearchQ = (q||'').trim().toLowerCase();
+  acAdminPage = 1;
+  acRenderAdminList();
+}
+
+function acAdminGoPage(p) { acAdminPage = p; acRenderAdminList(); }
+
+function acRenderAdminList() {
+  var listEl = document.getElementById('ac-admin-list');
+  var pagEl  = document.getElementById('ac-admin-pagination');
+  if (!listEl) return;
+
+  var filtered = acAdminSearchQ
+    ? acCourses.filter(function(c){ return c.name.toLowerCase().indexOf(acAdminSearchQ) !== -1; })
+    : acCourses;
+
+  setTxt('ac-total-num', acCourses.length);
+
+  if (!filtered.length) {
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-ico"><i class="bi bi-journal-x"></i></div><p>'
+      + (acAdminSearchQ ? 'No courses match your search.' : 'No courses yet.<br>Add a single course or paste a bulk list above.') + '</p></div>';
+    pagEl.innerHTML = '';
+    return;
+  }
+
+  var totalPages = Math.max(1, Math.ceil(filtered.length / acAdminPerPage));
+  if (acAdminPage > totalPages) acAdminPage = totalPages;
+  setTxt('ac-page-num', acAdminPage + ' / ' + totalPages);
+
+  var start = (acAdminPage - 1) * acAdminPerPage;
+  var pageItems = filtered.slice(start, start + acAdminPerPage);
+
+  listEl.innerHTML = pageItems.map(function(c, i) {
+    var num = start + i + 1;
+    if (acEditingId === c.id) {
+      return '<div class="ac-course-admin-row">'
+        + '<span class="ac-course-admin-idx">'+num+'.</span>'
+        + '<span class="ac-course-admin-name"><input type="text" id="ac-edit-inp-'+c.id+'" value="'+esc(c.name)+'" onkeypress="if(event.key===\'Enter\')acSaveEdit(\''+c.id+'\')"></span>'
+        + '<div class="ac-course-admin-actions">'
+        + '<button class="ac-icon-btn" title="Save" onclick="acSaveEdit(\''+c.id+'\')"><i class="bi bi-check-lg"></i></button>'
+        + '<button class="ac-icon-btn" title="Cancel" onclick="acCancelEdit()"><i class="bi bi-x-lg"></i></button>'
+        + '</div></div>';
+    }
+    return '<div class="ac-course-admin-row">'
+      + '<span class="ac-course-admin-idx">'+num+'.</span>'
+      + '<span class="ac-course-admin-name" title="'+esc(c.name)+'">'+esc(c.name)+'</span>'
+      + '<div class="ac-course-admin-actions">'
+      + '<button class="ac-icon-btn" title="Edit" onclick="acStartEdit(\''+c.id+'\')"><i class="bi bi-pencil-fill"></i></button>'
+      + '<button class="ac-icon-btn ac-del" title="Delete" onclick="acDeleteCourse(\''+c.id+'\',\''+esc(c.name).replace(/'/g,"\\'")+'\')"><i class="bi bi-trash3"></i></button>'
+      + '</div></div>';
+  }).join('');
+
+  // Pagination controls
+  if (totalPages <= 1) { pagEl.innerHTML = ''; return; }
+  var html = '<button class="ac-pg-btn" '+(acAdminPage===1?'disabled':'')+' onclick="acAdminGoPage('+(acAdminPage-1)+')">Previous</button>';
+  var delta = 1, range = [], last;
+  for (var p=1; p<=totalPages; p++) {
+    if (p===1 || p===totalPages || (p>=acAdminPage-delta && p<=acAdminPage+delta)) range.push(p);
+  }
+  range.forEach(function(p) {
+    if (last !== undefined && p - last > 1) html += '<span style="padding:0 4px;color:var(--tx3)">&hellip;</span>';
+    html += '<button class="ac-pg-btn '+(p===acAdminPage?'active':'')+'" onclick="acAdminGoPage('+p+')">'+p+'</button>';
+    last = p;
+  });
+  html += '<button class="ac-pg-btn" '+(acAdminPage===totalPages?'disabled':'')+' onclick="acAdminGoPage('+(acAdminPage+1)+')">Next</button>';
+  pagEl.innerHTML = html;
+}
+
+/* ===================================================
+   MEMBERSHIP COURSES COLLECTION — fully independent list
+   (separate Firebase path: membershipCourses/*, separate
+   settings, separate admin search/pagination state)
+   =================================================== */
+function loadMcForm() {
+  var logo = mcSettings.logoImage || '';
+  var logoImg = document.getElementById('mc-logo-img-prev');
+  var logoPh  = document.getElementById('mc-logo-ph');
+  if (logo) { logoImg.src = logo; logoImg.style.display = 'block'; logoPh.style.display = 'none'; }
+  else      { logoImg.style.display = 'none'; logoPh.style.display = 'flex'; }
+
+  setVal('mc-brand-handle', mcSettings.brandHandle || '@TheRoninCourse');
+  setVal('mc-tg-username', mcSettings.telegramUsername || 'TheRonincoursess');
+  setTxt('mc-total-num', mcCourses.length);
+}
+
+function mcSaveBrand() {
+  var handle = (document.getElementById('mc-brand-handle').value||'').trim() || '@TheRoninCourse';
+  db.ref('membershipCourses/settings').update({ brandHandle: handle })
+    .then(function(){ toast('Brand saved!','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function mcSaveTelegram() {
+  var uname = (document.getElementById('mc-tg-username').value||'').trim().replace(/^@/,'') || 'TheRonincoursess';
+  db.ref('membershipCourses/settings').update({ telegramUsername: uname })
+    .then(function(){ toast('Telegram settings saved!','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function mcAddSingleCourse() {
+  var inp = document.getElementById('mc-single-course');
+  var name = (inp.value||'').trim();
+  if (!name) { toast('Enter a course name','err'); return; }
+  db.ref('membershipCourses/courses').push({ name: name, createdAt: Date.now() })
+    .then(function(){ inp.value=''; toast('Course added!','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function mcBulkAddCourses() {
+  var ta = document.getElementById('mc-bulk-courses');
+  var lines = (ta.value||'').split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+  if (!lines.length) { toast('Paste at least one course name','err'); return; }
+  var updates = {};
+  var now = Date.now();
+  lines.forEach(function(name, i) {
+    var key = db.ref('membershipCourses/courses').push().key;
+    updates[key] = { name: name, createdAt: now + i };
+  });
+  db.ref('membershipCourses/courses').update(updates)
+    .then(function(){ ta.value=''; toast(lines.length + ' course(s) added!','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function mcStartEdit(id) {
+  mcEditingId = id;
+  mcRenderAdminList();
+  setTimeout(function(){
+    var inp = document.getElementById('mc-edit-inp-'+id);
+    if (inp) { inp.focus(); inp.select(); }
+  }, 30);
+}
+
+function mcCancelEdit() { mcEditingId = null; mcRenderAdminList(); }
+
+function mcSaveEdit(id) {
+  var inp = document.getElementById('mc-edit-inp-'+id);
+  var name = (inp.value||'').trim();
+  if (!name) { toast('Course name cannot be empty','err'); return; }
+  db.ref('membershipCourses/courses/'+id).update({ name: name })
+    .then(function(){ mcEditingId=null; toast('Course updated!','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function mcDeleteCourse(id, name) {
+  if (!confirm('Delete "'+name+'"? This cannot be undone.')) return;
+  db.ref('membershipCourses/courses/'+id).remove()
+    .then(function(){ toast('Course deleted','ok'); })
+    .catch(function(e){ toast('Error: '+e.message,'err'); });
+}
+
+function mcAdminSearch(q) {
+  mcAdminSearchQ = (q||'').trim().toLowerCase();
+  mcAdminPage = 1;
+  mcRenderAdminList();
+}
+
+function mcAdminGoPage(p) { mcAdminPage = p; mcRenderAdminList(); }
+
+function mcRenderAdminList() {
+  var listEl = document.getElementById('mc-admin-list');
+  var pagEl  = document.getElementById('mc-admin-pagination');
+  if (!listEl) return;
+
+  var filtered = mcAdminSearchQ
+    ? mcCourses.filter(function(c){ return c.name.toLowerCase().indexOf(mcAdminSearchQ) !== -1; })
+    : mcCourses;
+
+  setTxt('mc-total-num', mcCourses.length);
+
+  if (!filtered.length) {
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-ico"><i class="bi bi-journal-x"></i></div><p>'
+      + (mcAdminSearchQ ? 'No courses match your search.' : 'No courses yet.<br>Add a single course or paste a bulk list above.') + '</p></div>';
+    pagEl.innerHTML = '';
+    return;
+  }
+
+  var totalPages = Math.max(1, Math.ceil(filtered.length / mcAdminPerPage));
+  if (mcAdminPage > totalPages) mcAdminPage = totalPages;
+  setTxt('mc-page-num', mcAdminPage + ' / ' + totalPages);
+
+  var start = (mcAdminPage - 1) * mcAdminPerPage;
+  var pageItems = filtered.slice(start, start + mcAdminPerPage);
+
+  listEl.innerHTML = pageItems.map(function(c, i) {
+    var num = start + i + 1;
+    if (mcEditingId === c.id) {
+      return '<div class="ac-course-admin-row">'
+        + '<span class="ac-course-admin-idx">'+num+'.</span>'
+        + '<span class="ac-course-admin-name"><input type="text" id="mc-edit-inp-'+c.id+'" value="'+esc(c.name)+'" onkeypress="if(event.key===\'Enter\')mcSaveEdit(\''+c.id+'\')"></span>'
+        + '<div class="ac-course-admin-actions">'
+        + '<button class="ac-icon-btn" title="Save" onclick="mcSaveEdit(\''+c.id+'\')"><i class="bi bi-check-lg"></i></button>'
+        + '<button class="ac-icon-btn" title="Cancel" onclick="mcCancelEdit()"><i class="bi bi-x-lg"></i></button>'
+        + '</div></div>';
+    }
+    return '<div class="ac-course-admin-row">'
+      + '<span class="ac-course-admin-idx">'+num+'.</span>'
+      + '<span class="ac-course-admin-name" title="'+esc(c.name)+'">'+esc(c.name)+'</span>'
+      + '<div class="ac-course-admin-actions">'
+      + '<button class="ac-icon-btn" title="Edit" onclick="mcStartEdit(\''+c.id+'\')"><i class="bi bi-pencil-fill"></i></button>'
+      + '<button class="ac-icon-btn ac-del" title="Delete" onclick="mcDeleteCourse(\''+c.id+'\',\''+esc(c.name).replace(/'/g,"\\'")+'\')"><i class="bi bi-trash3"></i></button>'
+      + '</div></div>';
+  }).join('');
+
+  if (totalPages <= 1) { pagEl.innerHTML = ''; return; }
+  var html = '<button class="ac-pg-btn" '+(mcAdminPage===1?'disabled':'')+' onclick="mcAdminGoPage('+(mcAdminPage-1)+')">Previous</button>';
+  var delta = 1, range = [], last;
+  for (var p=1; p<=totalPages; p++) {
+    if (p===1 || p===totalPages || (p>=mcAdminPage-delta && p<=mcAdminPage+delta)) range.push(p);
+  }
+  range.forEach(function(p) {
+    if (last !== undefined && p - last > 1) html += '<span style="padding:0 4px;color:var(--tx3)">&hellip;</span>';
+    html += '<button class="ac-pg-btn '+(p===mcAdminPage?'active':'')+'" onclick="mcAdminGoPage('+p+')">'+p+'</button>';
+    last = p;
+  });
+  html += '<button class="ac-pg-btn" '+(mcAdminPage===totalPages?'disabled':'')+' onclick="mcAdminGoPage('+(mcAdminPage+1)+')">Next</button>';
+  pagEl.innerHTML = html;
+}
+
+/* =================================================================
+   ✅ MEMBERSHIPS — unlimited admin-managed membership pages
+   ================================================================= */
+function showMshipForm() {
+  document.getElementById('msh-form').style.display = 'block';
+  document.getElementById('msh-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function hideMshForm() {
+  document.getElementById('msh-form').style.display = 'none';
+  clearMshForm();
+}
+function clearMshForm() {
+  mshEditingId = null;
+  mshImages = [];
+  mshFeatures = [];
+  document.getElementById('msh-form-ttl').textContent = 'Add New Membership';
+  ['msh-name','msh-tagline','msh-img-inp','msh-price-orig','msh-price-monthly','msh-price-lifetime','msh-desc','msh-tg','msh-msg-tpl','msh-order','msh-feat-icon','msh-feat-title','msh-feat-label'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  var popEl = document.getElementById('msh-popular'); if (popEl) popEl.checked = false;
+  renderMshImgList();
+  renderMshFeatList();
+}
+function mshAddImage() {
+  var inp = document.getElementById('msh-img-inp');
+  var url = (inp.value || '').trim();
+  if (!url) return;
+  mshImages.push(url);
+  inp.value = '';
+  renderMshImgList();
+}
+function mshRemoveImage(i) { mshImages.splice(i,1); renderMshImgList(); }
+function renderMshImgList() {
+  var el = document.getElementById('msh-img-list');
+  if (!el) return;
+  if (!mshImages.length) { el.innerHTML = '<div style="font-size:.78rem;color:var(--tx3);padding:6px 2px">No images added yet — add at least one.</div>'; return; }
+  el.innerHTML = mshImages.map(function(url,i){
+    return '<div class="ss-item">'
+      + '<img class="ss-img" src="'+esc(url)+'" onerror="this.style.background=\'var(--s3)\'">'
+      + '<span class="ss-url">'+esc(url)+'</span>'
+      + '<button class="ico-btn del" onclick="mshRemoveImage('+i+')"><i class="bi bi-trash3"></i></button></div>';
+  }).join('');
+}
+
+function mshAddFeature() {
+  var icon  = document.getElementById('msh-feat-icon').value.trim();
+  var title = document.getElementById('msh-feat-title').value.trim();
+  var label = document.getElementById('msh-feat-label').value.trim();
+  if (!title && !label) { toast('Enter at least a title or label for the feature box', 'err'); return; }
+  mshFeatures.push({ icon: icon, title: title, label: label });
+  document.getElementById('msh-feat-icon').value = '';
+  document.getElementById('msh-feat-title').value = '';
+  document.getElementById('msh-feat-label').value = '';
+  renderMshFeatList();
+}
+function mshRemoveFeature(i) { mshFeatures.splice(i,1); renderMshFeatList(); }
+function renderMshFeatList() {
+  var el = document.getElementById('msh-feat-list');
+  if (!el) return;
+  if (!mshFeatures.length) { el.innerHTML = '<div style="font-size:.78rem;color:var(--tx3);padding:6px 2px;grid-column:1/-1">No feature boxes added yet.</div>'; return; }
+  el.innerHTML = mshFeatures.map(function(f,i){
+    return '<div style="background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:10px;display:flex;align-items:center;gap:9px">'
+      + '<div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--p),var(--acc));display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;font-size:.85rem">'+(f.icon || '<i class="bi bi-star-fill"></i>')+'</div>'
+      + '<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:.8rem;color:var(--tx)">'+esc(f.title||'')+'</div><div style="font-size:.68rem;color:var(--tx3)">'+esc(f.label||'')+'</div></div>'
+      + '<button class="ico-btn del" onclick="mshRemoveFeature('+i+')" style="flex-shrink:0"><i class="bi bi-trash3"></i></button>'
+      + '</div>';
+  }).join('');
+}
+
+function saveMship() {
+  var name = document.getElementById('msh-name').value.trim();
+  if (!name) { toast('Please enter a membership name', 'err'); return; }
+  if (!mshImages.length) { toast('Please add at least one image', 'err'); return; }
+
+  var data = {
+    name: name,
+    tagline: document.getElementById('msh-tagline').value.trim(),
+    images: mshImages.slice(),
+    priceOriginal: Number(document.getElementById('msh-price-orig').value) || 0,
+    priceMonthly: Number(document.getElementById('msh-price-monthly').value) || 0,
+    priceLifetime: Number(document.getElementById('msh-price-lifetime').value) || 0,
+    description: document.getElementById('msh-desc').value.trim(),
+    features: mshFeatures.slice(),
+    popular: !!document.getElementById('msh-popular').checked,
+    telegramUsername: document.getElementById('msh-tg').value.trim().replace(/^@/,''),
+    messageTemplate: document.getElementById('msh-msg-tpl').value,
+    order: Number(document.getElementById('msh-order').value) || 0,
+    createdAt: (mshEditingId && allMemberships[mshEditingId] && allMemberships[mshEditingId].createdAt) || Date.now()
+  };
+
+  var ref = mshEditingId ? db.ref('memberships/' + mshEditingId) : db.ref('memberships').push();
+  ref.set(data).then(function(){
+    toast(mshEditingId ? 'Membership updated' : 'Membership added', 'ok');
+    hideMshForm();
+  }).catch(function(err){ toast('Error: ' + err.message, 'err'); });
+}
+
+function editMship(id) {
+  var m = allMemberships[id];
+  if (!m) return;
+  mshEditingId = id;
+  mshImages = (m.images || []).slice();
+  mshFeatures = (m.features || []).slice();
+  document.getElementById('msh-form-ttl').textContent = 'Edit Membership';
+  document.getElementById('msh-name').value = m.name || '';
+  document.getElementById('msh-tagline').value = m.tagline || '';
+  document.getElementById('msh-price-orig').value = m.priceOriginal || '';
+  document.getElementById('msh-price-monthly').value = m.priceMonthly || '';
+  document.getElementById('msh-price-lifetime').value = m.priceLifetime || '';
+  document.getElementById('msh-popular').checked = !!m.popular;
+  document.getElementById('msh-desc').value = m.description || '';
+  document.getElementById('msh-tg').value = m.telegramUsername || '';
+  document.getElementById('msh-msg-tpl').value = m.messageTemplate || '';
+  document.getElementById('msh-order').value = (typeof m.order === 'number') ? m.order : '';
+  renderMshImgList();
+  renderMshFeatList();
+  showMshipForm();
+}
+
+function deleteMship(id, name) {
+  if (!confirm('Delete "' + name + '"? This cannot be undone.')) return;
+  db.ref('memberships/' + id).remove().then(function(){
+    toast('Membership deleted', 'ok');
+  }).catch(function(err){ toast('Error: ' + err.message, 'err'); });
+}
+
+function renderMembershipsAdmin() {
+  var listEl = document.getElementById('msh-admin-list');
+  if (!listEl) return;
+  var ids = Object.keys(allMemberships || {});
+  setTxt('msh-total-num', ids.length + 1); // +1 for the built-in Ultra Premium Group
+
+  var rows = '<div style="display:flex;align-items:center;gap:13px;background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;padding:12px;margin-bottom:10px;opacity:.85">'
+    + '<img src="https://iili.io/CsuYPt4.webp" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0">'
+    + '<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:.9rem;color:var(--tx)">Ultra Premium Group <span style="font-size:.62rem;font-weight:700;color:var(--tx3);text-transform:uppercase;background:var(--s3);border-radius:5px;padding:2px 6px;margin-left:4px">Built-in</span></div>'
+    + '<div style="font-size:.76rem;color:var(--tx3);margin-top:2px">Always shown first &middot; edit its content directly in index.html</div></div>'
+    + '</div>';
+
+  ids.sort(function(a,b){
+    var oa = (allMemberships[a] && allMemberships[a].order) || 0;
+    var ob = (allMemberships[b] && allMemberships[b].order) || 0;
+    return oa - ob;
+  });
+
+  rows += ids.map(function(id){
+    var m = allMemberships[id];
+    var thumb = (m.images && m.images[0]) || '';
+    var priceTxt = m.priceLifetime ? ('₹' + Number(m.priceLifetime).toLocaleString('en-IN') + ' lifetime') : 'No price set';
+    var popTag = m.popular ? ' <span style="font-size:.6rem;font-weight:800;color:#fff;background:linear-gradient(135deg,#f59e0b,#f97316);border-radius:5px;padding:2px 6px;margin-left:4px;text-transform:uppercase">🔥 Popular</span>' : '';
+    return '<div style="display:flex;align-items:center;gap:13px;background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;padding:12px;margin-bottom:10px">'
+      + (thumb ? '<img src="'+esc(thumb)+'" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0" onerror="this.style.display=\'none\'">' : '<div style="width:56px;height:56px;border-radius:10px;background:var(--s3);flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="bi bi-gem" style="color:var(--tx3)"></i></div>')
+      + '<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:.9rem;color:var(--tx)">'+esc(m.name||'Untitled')+popTag+'</div>'
+      + '<div style="font-size:.76rem;color:var(--tx3);margin-top:2px">'+priceTxt+' &middot; '+((m.images||[]).length)+' image'+((m.images||[]).length!==1?'s':'')+'</div></div>'
+      + '<button class="ico-btn" onclick="editMship(\''+id+'\')" title="Edit"><i class="bi bi-pencil-fill"></i></button>'
+      + '<button class="ico-btn del" onclick="deleteMship(\''+id+'\',\''+esc(m.name||'').replace(/'/g,"")+'\')" title="Delete"><i class="bi bi-trash3"></i></button>'
+      + '</div>';
+  }).join('');
+
+  listEl.innerHTML = rows;
+}
+</script>
+</body>
+</html>
